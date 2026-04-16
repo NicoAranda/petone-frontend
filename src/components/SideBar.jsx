@@ -9,7 +9,7 @@ export const SideBar = () => {
   const menuItems = [
     { icon: "bi-house-fill", label: "Inicio", path: "/" },
     { icon: "bi-play-btn", label: "Videos", path: "/videos" },
-    { icon: "bi-chat-fill", label: "Comentarios", path: "/comentarios" },
+    { icon: "bi-chat-fill", label: "Mensajes", path: "/mensajes" },
     { icon: "bi-search", label: "Buscar", path: "/buscar" },
   ]
 

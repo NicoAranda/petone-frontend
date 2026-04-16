@@ -1,0 +1,44 @@
+/* viewport */
+.stories-viewport {
+  overflow: hidden;
+  width: 100%;
+  max-width: 600px;
+}
+
+/* track */
+.stories-track {
+  display: flex;
+  transition: transform 0.4s ease-in-out;
+  margin: 0 -6px;
+}
+
+/* items */
+.story-item {
+  flex: 0 0 calc(100% / 6);
+  display: flex;
+  justify-content: center;
+  padding: 0 6px;
+}
+
+/* borde */
+.story-border {
+  padding: 3px;
+  border-radius: 50%;
+}
+
+.story-border.new {
+  background: linear-gradient(45deg, #feda75, #d62976, #962fbf);
+}
+
+.story-border.viewed {
+  background: #ccc;
+}
+
+/* imagen */
+.story-img {
+  width: 100%;
+  aspect-ratio: 1/1;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+}

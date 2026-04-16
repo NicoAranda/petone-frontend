@@ -1,6 +1,7 @@
-import { Routes } from 'react-router-dom'
+import { Route, Routes } from 'react-router-dom'
 import './App.css'
 import { SideBar } from './components/SideBar'
+import { HomePage } from './pages/HomePage'
 
 function App() {
 
@@ -9,6 +10,7 @@ function App() {
       <SideBar />
       <div style={{ marginLeft: "80px" }}>
         <Routes>
+          <Route path="/HomePage" element={<HomePage />}/>
           {/* <Route path="/" element={<h1>Inicio</h1>} />
           <Route path="/videos" element={<h1>Videos</h1>} />
           <Route path="/comentarios" element={<h1>Comentarios</h1>} />
