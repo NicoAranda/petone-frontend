@@ -1,0 +1,13 @@
+:root {
+	--sidebar-width: 80px;
+}
+
+.main-area {
+	margin-left: var(--sidebar-width);
+	transition: margin-left 0.28s ease;
+}
+
+/* ensure footer sits below and is not overlapped */
+footer {
+	z-index: 1;
+}

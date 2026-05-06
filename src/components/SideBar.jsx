@@ -1,14 +1,23 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import logo from '../assets/logo.png'
 import { NavLink } from 'react-router-dom'
+import './SideBar.css'
 
 export const SideBar = () => {
 
   const [hover, setHover] = useState(false)
 
+  useEffect(() => {
+    // set default sidebar width CSS variable
+    try {
+      document.documentElement.style.setProperty('--sidebar-width', '80px')
+    } catch (e) {}
+  }, [])
+
   const menuItems = [
     { icon: "bi-house-fill", label: "Inicio", path: "/" },
     { icon: "bi-play-btn", label: "Videos", path: "/videos" },
+    { icon: "bi-plus-circle-fill", label: "Crear publicación", path: "/HomePage" },
     { icon: "bi-chat-fill", label: "Mensajes", path: "/mensajes" },
     { icon: "bi-search", label: "Buscar", path: "/buscar" },
   ]
@@ -16,21 +25,16 @@ export const SideBar = () => {
   return (
     <>
       <div
-        onMouseEnter={() => setHover(true)}
-        onMouseLeave={() => setHover(false)}
-        className="d-flex flex-column justify-content-between position-fixed top-0 start-0 vh-100 py-3"
-        style={{
-          width: hover ? "220px" : "80px",
-          transition: "0.3s",
-          overflow: "hidden"
-        }}
+        onMouseEnter={() => { setHover(true); try { document.documentElement.style.setProperty('--sidebar-width', '220px') } catch(e){} }}
+        onMouseLeave={() => { setHover(false); try { document.documentElement.style.setProperty('--sidebar-width', '80px') } catch(e){} }}
+        className="d-flex flex-column justify-content-between position-fixed top-0 start-0 vh-100 py-3 sidebar"
       >
         {/* Logo */}
         <div className="d-flex align-items-left">
           <img
             src={logo}
             alt="logo"
-            style={{ width: "100px" }}
+            className="logo-img"
           />
         </div>
 
@@ -40,10 +44,7 @@ export const SideBar = () => {
             <NavLink
               key={index}
               to={item.path}
-              className={({ isActive }) =>
-                `d-flex align-items-center gap-3 px-3 py-2 text-decoration-none fw-bold text-black
-                }`
-              }
+              className={({ isActive }) => `d-flex align-items-center gap-3 px-3 py-2 text-decoration-none fw-bold text-dark ${isActive ? 'active' : ''}`}
               style={{ cursor: "pointer" }}
             >
               <i className={`bi ${item.icon} fs-4`}></i>
@@ -60,6 +61,8 @@ export const SideBar = () => {
             </NavLink>
           ))}
         </div>
+
+        
 
         {/* Parte inferior */}
         <div className="d-flex flex-column gap-4 px-3">

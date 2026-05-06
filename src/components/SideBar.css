@@ -1,0 +1,20 @@
+.sidebar {
+  background-color: #ffffff;
+  color: #333333;
+  border-right: 1px solid #e9ecef;
+  box-shadow: 0 0 8px rgba(0,0,0,0.03);
+  z-index: 1000;
+  width: var(--sidebar-width);
+  transition: width 0.28s ease, background-color 0.2s ease;
+  overflow: hidden;
+}
+
+.sidebar .logo-img {
+  width: 100px;
+}
+
+.sidebar a.text-dark {
+  color: #333333 !important;
+}
+
+/* create-post styles removed to match menu item styles */
