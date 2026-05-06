@@ -1,7 +1,8 @@
-import { Route, Routes } from 'react-router-dom'
+import { Navigate, Route, Routes } from 'react-router-dom'
 import './App.css'
 import { SideBar } from './components/SideBar'
 import { HomePage } from './pages/HomePage'
+import { StoryViewPage } from './pages/StoryViewPage'
 
 function App() {
   return (
@@ -12,7 +13,10 @@ function App() {
       
       <div className="flex-grow-1" style={{ marginLeft: "80px" }}>
         <Routes>
-          <Route path="/" element={<HomePage />}/>
+          <Route path="/" element={<Navigate to="/HomePage" replace/>}/>
+          <Route path="/HomePage" element={<HomePage />}/>
+          <Route path="/StoryView" element={<StoryViewPage />}/>
+
         </Routes>
       </div>
       

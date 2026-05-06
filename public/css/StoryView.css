@@ -1,0 +1,216 @@
+.story-close-btn {
+  border: none;
+  font-size: 40px;
+  cursor: pointer;
+}
+
+.story-preview-side {
+  width: 220px;
+}
+
+.story-preview-card {
+  width: 180px;
+  height: 320px;
+  border-radius: 18px;
+  overflow: hidden;
+  opacity: 0.45;
+  transform: scale(0.9);
+}
+
+.story-main-card {
+  width: 420px;
+  height: 760px;
+  border-radius: 22px;
+}
+
+.story-progress-bar {
+  width: 100%;
+  height: 3px;
+  border-radius: 50px;
+  background: rgba(255,255,255,0.35);
+  overflow: hidden;
+}
+
+.story-progress-fill {
+  width: 40%;
+  height: 100%;
+  background: white;
+}
+
+.story-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid white;
+}
+
+.story-arrow-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255,255,255,0.2);
+  color: white;
+  font-size: 22px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.story-arrow-btn:hover {
+  background: rgba(255,255,255,0.4);
+}
+
+.story-arrow-btn:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+@media (max-width: 768px) {
+  .story-main-card {
+    width: 100vw;
+    height: 100vh;
+    border-radius: 0;
+  }
+
+  .story-arrow-btn {
+    position: absolute;
+    z-index: 20;
+  }
+
+  .story-arrow-btn:first-child {
+    left: 10px;
+  }
+
+  .story-arrow-btn:last-child {
+    right: 10px;
+  }
+}
+
+/* Contenedor principal de pantalla completa */
+.story-view-wrapper {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: white;
+  z-index: 1050;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden; /* Oculta lo que sale de los bordes de la pantalla */
+}
+
+/* El visor central (del tamaño de la tarjeta activa) */
+.story-view-viewport {
+  width: 420px;
+  height: 760px;
+  position: relative;
+  /* IMPORTANTE: No usamos overflow hidden aquí para poder ver 
+     las tarjetas anteriores y siguientes asomándose por los lados */
+}
+
+/* La pista que se mueve (exactamente igual a tu lógica de Stories) */
+.story-view-track {
+  display: flex;
+  height: 100%;
+  transition: transform 0.4s ease-in-out;
+}
+
+/* Cada historia dentro de la pista */
+.story-view-item {
+  flex: 0 0 100%; /* Cada item ocupa exactamente el 100% del viewport (420px) */
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: transform 0.4s ease-in-out, opacity 0.4s ease-in-out;
+  
+  /* Por defecto (inactivas) están encogidas y semi-transparentes */
+  transform: scale(0.85);
+  opacity: 0.45;
+}
+
+/* La historia que estamos viendo actualmente */
+.story-view-item.active {
+  transform: scale(1);
+  opacity: 1;
+}
+
+/* Estructura de la tarjeta */
+.story-main-card {
+  width: 100%;
+  height: 100%;
+  border-radius: 22px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  background: black;
+  position: relative;
+}
+
+/* Barra de progreso */
+.story-progress-bar {
+  width: 100%;
+  height: 3px;
+  background: rgba(255,255,255,0.35);
+  border-radius: 50px;
+  overflow: hidden;
+}
+
+.story-progress-fill {
+  background: white;
+  height: 100%;
+  width: 0%;
+}
+
+/* 🔥 MAGIA: La barra solo se llena si la tarjeta tiene la clase .active */
+.story-view-item.active .story-progress-fill {
+  animation: fillProgress 5s linear forwards;
+}
+
+@keyframes fillProgress {
+  from { width: 0%; }
+  to { width: 100%; }
+}
+
+/* Botones y Avatares */
+.story-close-btn {
+  color: #333;
+  font-size: 40px;
+  cursor: pointer;
+}
+
+.story-arrow-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: none;
+  background: #f0f0f0;
+  color: #333;
+  font-size: 20px;
+  cursor: pointer;
+  transition: 0.2s;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 10;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.story-arrow-btn.prev { left: -70px; }
+.story-arrow-btn.next { right: -70px; }
+.story-arrow-btn:disabled { opacity: 0; cursor: default; pointer-events: none; }
+
+/* Responsive para celular */
+@media (max-width: 768px) {
+  .story-view-viewport {
+    width: 100vw;
+    height: 100vh;
+  }
+  .story-main-card {
+    border-radius: 0;
+  }
+  .story-arrow-btn.prev { left: 10px; z-index: 50; }
+  .story-arrow-btn.next { right: 10px; z-index: 50; }
+}
