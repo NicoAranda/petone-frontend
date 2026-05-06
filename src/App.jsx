@@ -13,9 +13,6 @@ function App() {
       <div className="flex-grow-1" style={{ marginLeft: "80px" }}>
         <Routes>
           <Route path="/" element={<HomePage />}/>
-          <Route path="/videos" element={<h1>Videos</h1>} />
-          <Route path="/comentarios" element={<h1>Comentarios</h1>} />
-          <Route path="/buscar" element={<h1>Buscar</h1>} />
         </Routes>
       </div>
       
