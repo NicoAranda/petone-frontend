@@ -1,6 +1,6 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
 import './App.css'
-import { SideBar } from './components/SideBar'
+import { SideBar } from './components/SideBar/SideBar'
 import { HomePage } from './pages/HomePage'
 import { StoryViewPage } from './pages/StoryViewPage'
 import Footer from './components/Footer'
@@ -11,9 +11,7 @@ function App() {
   return (
     // Quitamos bg-black y text-white, agregamos un color de fondo verde muy suave
     <div className="d-flex min-vh-100" style={{ backgroundColor: '#f4f9f4', color: '#333' }}>
-      
       <SideBar />
-      
       <div className="main-area flex-grow-1 d-flex flex-column">
         <div className="flex-grow-1">
           <Routes>
