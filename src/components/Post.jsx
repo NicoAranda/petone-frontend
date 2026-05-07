@@ -74,6 +74,7 @@ const Post = () => {
           placeholder="Agrega un comentario..." 
           style={{ fontSize: '14px' }} 
         />
+
         <button className="btn btn-link text-decoration-none fw-bold p-0 text-success" style={{ fontSize: '14px' }}>
           Publicar
         </button>

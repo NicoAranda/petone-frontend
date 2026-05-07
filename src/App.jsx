@@ -1,3 +1,4 @@
+import React, { useState } from 'react' // 1. Importamos React y useState
 import { Navigate, Route, Routes } from 'react-router-dom'
 import { SideBar } from './components/SideBar/SideBar'
 import { HomePage } from './pages/HomePage'
@@ -5,13 +6,17 @@ import { StoryViewPage } from './pages/StoryViewPage'
 import Footer from './components/Footer'
 import Terms from './pages/Terms'
 import Privacy from './pages/Privacy'
+import CreatePostModal from './components/PostCreate/CreatePostModal' 
 import { AboutUsPage } from './pages/AboutUsPage'
 
 function App() {
+  const [isModalOpen, setIsModalOpen] = useState(false)
+
   return (
-    // Quitamos bg-black y text-white, agregamos un color de fondo verde muy suave
     <div className="d-flex min-vh-100" style={{ backgroundColor: '#f4f9f4', color: '#333' }}>
-      <SideBar />
+      
+      <SideBar onOpenModal={() => setIsModalOpen(true)} />
+      
       <div className="main-area flex-grow-1 d-flex flex-column">
         <div className="flex-grow-1">
           <Routes>
@@ -25,6 +30,8 @@ function App() {
         </div>
         <Footer />
       </div>
+      
+      <CreatePostModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
       
     </div>
   )
