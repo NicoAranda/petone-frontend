@@ -1,11 +1,11 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
-import './App.css'
 import { SideBar } from './components/SideBar/SideBar'
 import { HomePage } from './pages/HomePage'
 import { StoryViewPage } from './pages/StoryViewPage'
 import Footer from './components/Footer'
 import Terms from './pages/Terms'
 import Privacy from './pages/Privacy'
+import { AboutUsPage } from './pages/AboutUsPage'
 
 function App() {
   return (
@@ -20,6 +20,7 @@ function App() {
             <Route path="/StoryView" element={<StoryViewPage />}/>
             <Route path="/terms" element={<Terms />}/>
             <Route path="/privacy" element={<Privacy />}/>
+            <Route path="/about" element={<AboutUsPage />}/>
           </Routes>
         </div>
         <Footer />
