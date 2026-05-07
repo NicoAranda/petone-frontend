@@ -1,0 +1,156 @@
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.6);
+  z-index: 1050; /* Por encima de todo */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+
+.modal-container {
+  background-color: #fff;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 500px;
+  max-height: 90vh;
+  padding: 24px;
+  overflow-y: auto;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+
+
+.photo-upload-box {
+  border: 2px dashed #198754;
+  border-radius: 12px;
+  background-color: #f4f9f4;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  min-height: 150px;
+}
+
+.photo-upload-box:hover {
+  background-color: #e8f5e9;
+}
+
+.file-input {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+
+
+.carousel-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  padding: 0 35px; 
+  margin: 0 -10px;
+}
+
+
+.photo-gallery-container {
+  display: flex;
+  flex-wrap: nowrap; 
+  gap: 10px;
+  overflow-x: auto; 
+  scroll-behavior: smooth;
+  width: 100%;
+  padding-bottom: 5px;
+}
+
+
+.photo-gallery-container::-webkit-scrollbar {
+  display: none;
+}
+.photo-gallery-container {
+  scrollbar-width: none;
+}
+
+
+.carousel-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background-color: white;
+  color: #198754;
+  border: 1px solid #e0e0e0;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  z-index: 2;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+  transition: 0.2s;
+}
+
+.carousel-btn:hover {
+  background-color: #f4f9f4;
+  color: #146c43;
+}
+
+.carousel-btn.left {
+  left: 0;
+}
+
+.carousel-btn.right {
+  right: 0;
+}
+
+.photo-preview-wrapper,
+.photo-upload-box.small-box {
+  flex-shrink: 0;
+  width: 100px;
+  height: 100px;
+  border-radius: 8px;
+  position: relative;
+  min-height: auto;
+}
+
+.photo-preview-wrapper {
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.preview-img-small {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.btn-remove-photo {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  background-color: rgba(0, 0, 0, 0.6);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.btn-remove-photo:hover {
+  background-color: #dc3545;
+}
