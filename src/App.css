@@ -1,5 +1,21 @@
 :root {
 	--sidebar-width: 80px;
+	--bs-primary: #2d5a27;
+	--bs-primary-rgb: 45, 90, 39;
+}
+
+.btn-primary {
+	--bs-btn-bg: #2d5a27;
+	--bs-btn-border-color: #2d5a27;
+
+	--bs-btn-hover-bg: #24481f;
+	--bs-btn-hover-border-color: #24481f;
+
+	--bs-btn-active-bg: #1d3a19;
+	--bs-btn-active-border-color: #1d3a19;
+
+	--bs-btn-disabled-bg: #2d5a27;
+	--bs-btn-disabled-border-color: #2d5a27;
 }
 
 .main-area {
@@ -10,4 +26,17 @@
 /* ensure footer sits below and is not overlapped */
 footer {
 	z-index: 1;
+}
+
+.title{
+	font-weight: 700;
+}
+
+.fondo{
+	background-image: linear-gradient(rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0.6)), url('./assets/images/fondo.jpg');
+	background-size: cover;
+	background-position: center;
+	background-repeat: no-repeat;
+
+	
 }
