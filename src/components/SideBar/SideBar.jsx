@@ -12,17 +12,15 @@ export const SideBar = ({ onOpenModal }) => {
     // set default sidebar width CSS variable
     try {
       document.documentElement.style.setProperty('--sidebar-width', '80px')
-    } catch (e) {}
+    } catch (e) { }
   }, [])
 
   // 2. Modificamos los items. A "Crear publicación" le quitamos el "path" y le agregamos "action"
+
   const menuItems = [
-    { icon: "bi-house-fill", label: "Inicio", path: "/" },
-    { icon: "bi-play-btn", label: "Videos", path: "/videos" },
-    { icon: "bi-plus-circle-fill", label: "Crear publicación", action: onOpenModal }, // <-- Cambio aquí
     { icon: "bi-house-fill", label: "Inicio", path: "/HomePage" },
     { icon: "bi-info-circle-fill", label: "Sobre Nosotros", path: "/about" },
-    { icon: "bi-plus-circle-fill", label: "Crear publicación", path: "/HomePage" },
+    { icon: "bi-plus-circle-fill", label: "Crear publicación", action: onOpenModal },
     { icon: "bi-chat-fill", label: "Mensajes", path: "/mensajes" },
     { icon: "bi-search", label: "Buscar", path: "/buscar" },
   ]
@@ -30,23 +28,15 @@ export const SideBar = ({ onOpenModal }) => {
   return (
     <>
       <div
-        onMouseEnter={() => { setHover(true); try { document.documentElement.style.setProperty('--sidebar-width', '220px') } catch(e){} }}
-        onMouseLeave={() => { setHover(false); try { document.documentElement.style.setProperty('--sidebar-width', '80px') } catch(e){} }}
+        onMouseEnter={() => { setHover(true); try { document.documentElement.style.setProperty('--sidebar-width', '220px') } catch (e) { } }}
+        onMouseLeave={() => { setHover(false); try { document.documentElement.style.setProperty('--sidebar-width', '80px') } catch (e) { } }}
         className="d-flex flex-column justify-content-between position-fixed top-0 start-0 vh-100 py-3 sidebar"
       >
-        {/* Logo */}
-        <div className="d-flex align-items-left">
-          <img
-            src={logo}
-            alt="logo"
-            className="logo-img"
-          />
-        </div>
 
         {/* Menú */}
         <div className="d-flex flex-column gap-4 flex-grow-1 justify-content-center">
           {menuItems.map((item, index) => {
-            
+
             // 3. Si el item tiene un "action" (como nuestro botón de crear), renderizamos un div clickeable
             if (item.action) {
               return (
@@ -97,8 +87,8 @@ export const SideBar = ({ onOpenModal }) => {
         {/* Parte inferior */}
         <div className="d-flex flex-column gap-4 px-3">
           <div className="d-flex align-items-center gap-3" style={{ cursor: "pointer" }}>
-            <i className="bi bi-list fs-4 fw-bold text-dark"></i>
-            <span className="fw-bold text-dark" style={{ opacity: hover ? 1 : 0, transition: "0.2s" }}>Menú</span>
+            <i className="bi bi-person-fill fs-4 fw-bold text-dark"></i>
+            <span className="fw-bold text-dark" style={{ opacity: hover ? 1 : 0, transition: "0.2s" }}>Perfil</span>
           </div>
         </div>
       </div>
