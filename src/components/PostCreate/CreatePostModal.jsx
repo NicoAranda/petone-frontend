@@ -103,7 +103,7 @@ const CreatePostModal = ({ isOpen, onClose }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+    setLoading(true)
     const formData = new FormData();
 
     formData.append("nombre", nombre);
@@ -135,6 +135,8 @@ const CreatePostModal = ({ isOpen, onClose }) => {
     } catch (error) {
       console.error("Error de conexión: ", error);
       toast.error("Error de red al intentar conectar con el servidor.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -290,8 +292,19 @@ const CreatePostModal = ({ isOpen, onClose }) => {
             </textarea>
           </div>
 
-          <button type="submit" className="btn btn-success w-100 fw-bold rounded-pill py-2">
-            Publicar Mascota
+          <button 
+            type="submit" 
+            className="btn btn-success w-100 fw-bold rounded-pill py-2"
+            disabled={loading}
+          >
+            {loading ? (
+              <>
+                <span className='spinner-border spinner-border-sm me-2' aria-hidden="true"></span>
+                <span role='status'>Publicando...</span>
+              </>
+            ) : (
+              "Publicar Mascota"
+            )}
           </button>
         </form>
 
