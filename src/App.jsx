@@ -8,12 +8,14 @@ import Terms from './pages/Terms'
 import Privacy from './pages/Privacy'
 import CreatePostModal from './components/PostCreate/CreatePostModal' 
 import { AboutUsPage } from './pages/AboutUsPage'
+import { Toaster } from 'react-hot-toast'
 
 function App() {
   const [isModalOpen, setIsModalOpen] = useState(false)
 
   return (
     <div className="d-flex min-vh-100" style={{ backgroundColor: '#f4f9f4', color: '#333' }}>
+      <Toaster position='top-center' reverseOrder={false}/>
       
       <SideBar onOpenModal={() => setIsModalOpen(true)} />
       
