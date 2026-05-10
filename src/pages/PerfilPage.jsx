@@ -77,13 +77,24 @@ export const PerfilPage = () => {
           {/* Encabezado del Perfil (Foto + Nombre) */}
           <div className="container position-relative px-4 mt-5">
             <div className="d-flex flex-column flex-sm-row align-items-sm-end">
-              <img
-                src="https://images.unsplash.com/photo-1501196354995-cbb51c65aaea?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w0NzEyNjZ8MHwxfHNlYXJjaHw3fHxwZW9wbGV8ZW58MHwwfHx8MTcxMTExMTM4N3ww&ixlib=rb-4.0.3&q=80&w=1080"
-                alt="User Profile"
-                className="rounded-3 border border-4 border-primary bg-white shadow-sm"
-                style={{ width: '150px', height: '150px', objectFit: 'cover', zIndex: 1 }}
-              />
-              <h1 className="ms-sm-4 mt-3 mt-sm-0 mb-sm-4 text-dark fw-bold fs-2 text-start">
+
+              {/* Avatar con Iniciales (Circular + Gradiente Verde) */}
+              <div
+                className="d-flex justify-content-center align-items-center rounded-circle border border-4 border-white text-white shadow"
+                style={{
+                  width: '150px',
+                  height: '150px',
+                  zIndex: 1,
+                  fontSize: '4.5rem',
+                  fontWeight: 'bold',
+                  background: 'linear-gradient(135deg, #11998e 0%, #38ef7d 100%)'
+                }}
+              >
+                {userData?.nombre?.charAt(0).toUpperCase() || ''}
+                {userData?.apellido?.charAt(0).toUpperCase() || ''}
+              </div>
+
+              <h1 className="ms-sm-4 mt-3 mt-sm-0 mb-sm-4 text-dark fw-bold fs-2 text-start text-capitalize">
                 {userData?.nombre} {userData?.apellido}
               </h1>
             </div>
