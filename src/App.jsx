@@ -12,6 +12,7 @@ import { Toaster } from 'react-hot-toast'
 import { LoginRegister } from './pages/LoginRegister'
 import AdminDashboard from './pages/AdminDashboard'
 import AdminLogin from './pages/AdminLogin'
+import { PerfilPage } from './pages/PerfilPage'
 
 function App() {
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -56,6 +57,7 @@ function App() {
             <Route path="/login" element={<LoginRegister />}/>
             <Route path="/admin/login" element={<AdminLogin />} />
             <Route path="/admin" element={<AdminDashboard />} />
+            <Route path="/perfil" element={<PerfilPage />} />
           </Routes>
         </div>
         {/* <Footer /> */}

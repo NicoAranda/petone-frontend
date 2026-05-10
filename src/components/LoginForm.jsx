@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
 import toast from 'react-hot-toast';
+import { useAuth } from '../context/AuthContext';
 
 export const LoginForm = ({ onSwitchForm }) => {
 
@@ -11,6 +12,7 @@ export const LoginForm = ({ onSwitchForm }) => {
 	const [isLoading, setIsLoading] = useState(false)
 
 	const navigate = useNavigate()
+	const { login } = useAuth();
 
 	const handleSubmit = async (e) => {
 		e.preventDefault();
@@ -52,7 +54,7 @@ export const LoginForm = ({ onSwitchForm }) => {
 
 			const data = await response.json();
 
-			localStorage.setItem('token', data.token);
+			login(data.token);
 
 			toast.success("¡Inicio de sesión exitoso!");
 			navigate('/HomePage')
