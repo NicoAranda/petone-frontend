@@ -9,6 +9,7 @@ import Privacy from './pages/Privacy'
 import CreatePostModal from './components/PostCreate/CreatePostModal' 
 import { AboutUsPage } from './pages/AboutUsPage'
 import { Toaster } from 'react-hot-toast'
+import { LoginRegister } from './pages/LoginRegister'
 import AdminDashboard from './pages/AdminDashboard'
 import AdminLogin from './pages/AdminLogin'
 
@@ -52,11 +53,12 @@ function App() {
             <Route path="/terms" element={<Terms />}/>
             <Route path="/privacy" element={<Privacy />}/>
             <Route path="/about" element={<AboutUsPage />}/>
+            <Route path="/login" element={<LoginRegister />}/>
             <Route path="/admin/login" element={<AdminLogin />} />
             <Route path="/admin" element={<AdminDashboard />} />
           </Routes>
         </div>
-        <Footer />
+        {/* <Footer /> */}
       </div>
       
       <CreatePostModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onSuccess={refreshPosts} />
