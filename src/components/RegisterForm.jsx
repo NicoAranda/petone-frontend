@@ -1,169 +1,263 @@
-import React from 'react'
+import React, { useState } from 'react'
 
 export const RegisterForm = ({ onSwitchForm }) => {
-	return (
-		<>
-			<div className="vh-100 d-flex align-items-center justify-content-center p-3">
-				{/* Contenedor principal estilo tarjeta */}
-				<div
-					className="card rounded-4 shadow-lg w-100 overflow-hidden border-0 fade-in-bckg"
-					style={{ maxWidth: '1000px' }}
-				>
-					<div className="row g-0">
-						<div className="col-md-6 d-none d-md-flex p-0 fondoRegister align-items-center justify-content-center">
-							<p className="display-1 text-white text-center px-4">¡Se parte de nuestra comunidad!</p>
-						</div>
 
-						{/* Lado Derecho (Formulario) */}
-						<div className="col-md-6 p-4 p-md-5">
-							<div className="text-center mb-5">
-								<h1 className="fw-bold fs-2 text-dark">Registrate</h1>
-								<p className="text-muted">Ingresa tu información para registrarte</p>
-							</div>
+  const [formData, setFormData] = useState({
+    nombre: '',
+    apellido: '',
+    email: '',
+    password: '',
+    confirmPassword: '',
+    rut: '',
+    telefono: '',
+  });
 
-							<form>
-								<div className="row mb-3">
-									{/* First Name */}
-									<div className="col-sm-6 mb-3 mb-sm-0">
-										<label htmlFor="firstName" className="form-label small fw-semibold">Nombre</label>
-										<div className="input-group">
-											<span className="input-group-text bg-white text-muted border-end-0">
-												<i className="bi bi-person"></i>
-											</span>
-											<input
-												type="text"
-												id="firstName"
-												className="form-control border-start-0 ps-0 focus-ring focus-ring-light"
-												placeholder="Ej: Juan"
-											/>
-										</div>
-									</div>
+  const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
-									{/* Last Name */}
-									<div className="col-sm-6">
-										<label htmlFor="lastName" className="form-label small fw-semibold">Apellido</label>
-										<div className="input-group">
-											<span className="input-group-text bg-white text-muted border-end-0">
-												<i className="bi bi-person"></i>
-											</span>
-											<input
-												type="text"
-												id="lastName"
-												className="form-control border-start-0 ps-0 focus-ring focus-ring-light"
-												placeholder="Ej: Pérez"
-											/>
-										</div>
-									</div>
-								</div>
+  const handleChange = (e) => {
+    const { id, value } = e.target;
+    // CORRECCIÓN 1: formData bien escrito
+    setFormData({ ...formData, [id]: value }); 
+  };
 
-								{/* Email */}
-								<div className="mb-3">
-									<label htmlFor="email" className="form-label small fw-semibold">Email</label>
-									<div className="input-group">
-										<span className="input-group-text bg-white text-muted border-end-0">
-											<i className="bi bi-envelope"></i>
-										</span>
-										<input
-											type="email"
-											id="email"
-											className="form-control border-start-0 ps-0 focus-ring focus-ring-light"
-											placeholder="juanperezs@example.com"
-										/>
-									</div>
-								</div>
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError(null);
+    setSuccess(false);
 
-								{/* Password */}
-								<div className="row mb-3">
-									<div className="col-sm-6 mb-3 mb-sm-0">
-										<label htmlFor="password" className="form-label small fw-semibold">Contraseña</label>
-										<div className="input-group">
-											<span className="input-group-text bg-white text-muted border-end-0">
-												<i className="bi bi-lock"></i>
-											</span>
-											<input
-												type="password"
-												id="password"
-												className="form-control border-start-0 ps-0 focus-ring focus-ring-light"
-												placeholder="************"
-											/>
-										</div>
-									</div>
-									<div className="mb-3 col-sm-6 mb-3 mb-sm-0">
-										<label htmlFor="password" className="form-label small fw-semibold">Confirmar Contraseña</label>
-										<div className="input-group">
-											<span className="input-group-text bg-white text-muted border-end-0">
-												<i className="bi bi-lock"></i>
-											</span>
-											<input
-												type="password"
-												id="password"
-												className="form-control border-start-0 ps-0 focus-ring focus-ring-light"
-												placeholder="************"
-											/>
-										</div>
-									</div>
-								</div>
+    if (formData.password !== formData.confirmPassword) {
+      setError("Las contraseñas no coinciden");
+      return;
+    }
 
-								{/* rut */}
-								<div className="mb-3">
-									<label htmlFor="email" className="form-label small fw-semibold">Rut</label>
-									<div className="input-group">
-										<span className="input-group-text bg-white text-muted border-end-0">
-											<i className="bi bi-person-vcard"></i>
-										</span>
-										<input
-											type="rut"
-											id="rut"
-											className="form-control border-start-0 ps-0 focus-ring focus-ring-light"
-											placeholder="12.345.678-9"
-										/>
-									</div>
-								</div>
+    setIsLoading(true);
 
-								{/* telefono */}
-								<div className="mb-3">
-									<label htmlFor="telefono" className="form-label small fw-semibold">Telefono</label>
-									<div className="input-group">
-										<span className="input-group-text bg-white text-muted border-end-0">
-											<i className="bi bi-telephone"></i>
-										</span>
-										<input
-											type="telefono"
-											id="telefono"
-											className="form-control border-start-0 ps-0 focus-ring focus-ring-light"
-											placeholder="+56 9"
-										/>
-									</div>
-								</div>
+    try {
+      const api_url = 'http://localhost:8080/api/usuarios/registro-cliente';
+      const response = await fetch(api_url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          nombre: formData.nombre,
+          apellido: formData.apellido,
+          email: formData.email,
+          password: formData.password, // CORRECCIÓN 2: Sin la 'e' extra
+          rut: formData.rut,
+          telefono: formData.telefono
+        }),
+      });
 
-								{/* Enlace para cambiar a Login */}
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+        throw new Error(errorData?.message || 'Error al registrar el usuario. Verifica los datos.');
+      }
+
+      setSuccess(true);
+
+      setTimeout(() => {
+        onSwitchForm();
+      }, 3000);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <>
+      <div className="vh-100 d-flex align-items-center justify-content-center p-3">
+        <div
+          className="card rounded-4 shadow-lg w-100 overflow-hidden border-0 fade-in-bckg"
+          style={{ maxWidth: '1000px' }}
+        >
+          <div className="row g-0">
+            <div className="col-md-6 d-none d-md-flex p-0 fondoRegister align-items-center justify-content-center">
+              <p className="display-1 text-white text-center px-4">¡Sé parte de nuestra comunidad!</p>
+            </div>
+
+            <div className="col-md-6 p-4 p-md-5">
+              <div className="text-center mb-5">
+                <h1 className="fw-bold fs-2 text-dark">Regístrate</h1>
+                <p className="text-muted">Ingresa tu información para registrarte</p>
+              </div>
+
+              {error && <div className="alert alert-danger py-2 small">{error}</div>}
+              {success && (
+                <div className="alert alert-success py-2 small">
+                  ¡Registro exitoso! Redirigiendo al inicio de sesión...
+                </div>
+              )}
+
+              <form onSubmit={handleSubmit}>
+                <div className="row mb-3">
+                  <div className="col-sm-6 mb-3 mb-sm-0">
+                    <label htmlFor="nombre" className="form-label small fw-semibold">Nombre</label>
+                    <div className="input-group">
+                      <span className="input-group-text bg-white text-muted border-end-0">
+                        <i className="bi bi-person"></i>
+                      </span>
+                      {/* CORRECCIÓN 3: id coincide con el estado, agregado value y onChange */}
+                      <input
+                        type="text"
+                        id="nombre"
+                        value={formData.nombre}
+                        onChange={handleChange}
+                        className="form-control border-start-0 ps-0 focus-ring focus-ring-light"
+                        placeholder="Ej: Juan"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div className="col-sm-6">
+                    <label htmlFor="apellido" className="form-label small fw-semibold">Apellido</label>
+                    <div className="input-group">
+                      <span className="input-group-text bg-white text-muted border-end-0">
+                        <i className="bi bi-person"></i>
+                      </span>
+                      <input
+                        type="text"
+                        id="apellido"
+                        value={formData.apellido}
+                        onChange={handleChange}
+                        className="form-control border-start-0 ps-0 focus-ring focus-ring-light"
+                        placeholder="Ej: Pérez"
+                        required
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mb-3">
+                  <label htmlFor="email" className="form-label small fw-semibold">Email</label>
+                  <div className="input-group">
+                    <span className="input-group-text bg-white text-muted border-end-0">
+                      <i className="bi bi-envelope"></i>
+                    </span>
+                    <input
+                      type="email"
+                      id="email"
+                      value={formData.email}
+                      onChange={handleChange}
+                      className="form-control border-start-0 ps-0 focus-ring focus-ring-light"
+                      placeholder="juanperez@example.com"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="row mb-3">
+                  <div className="col-sm-6 mb-3 mb-sm-0">
+                    <label htmlFor="password" className="form-label small fw-semibold">Contraseña</label>
+                    <div className="input-group">
+                      <span className="input-group-text bg-white text-muted border-end-0">
+                        <i className="bi bi-lock"></i>
+                      </span>
+                      <input
+                        type="password"
+                        id="password"
+                        value={formData.password}
+                        onChange={handleChange}
+                        className="form-control border-start-0 ps-0 focus-ring focus-ring-light"
+                        placeholder="************"
+                        minLength="6"
+                        required
+                      />
+                    </div>
+                  </div>
+                  <div className="mb-3 col-sm-6 mb-3 mb-sm-0">
+                    <label htmlFor="confirmPassword" className="form-label small fw-semibold">Confirmar Contraseña</label>
+                    <div className="input-group">
+                      <span className="input-group-text bg-white text-muted border-end-0">
+                        <i className="bi bi-lock"></i>
+                      </span>
+                      <input
+                        type="password"
+                        id="confirmPassword"
+                        value={formData.confirmPassword}
+                        onChange={handleChange}
+                        className="form-control border-start-0 ps-0 focus-ring focus-ring-light"
+                        placeholder="************"
+                        minLength="6"
+                        required
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mb-3">
+                  <label htmlFor="rut" className="form-label small fw-semibold">Rut</label>
+                  <div className="input-group">
+                    <span className="input-group-text bg-white text-muted border-end-0">
+                      <i className="bi bi-person-vcard"></i>
+                    </span>
+                    <input
+                      type="text" // Cambiado de 'rut' a 'text', 'rut' no es un tipo de input HTML válido
+                      id="rut"
+                      value={formData.rut}
+                      onChange={handleChange}
+                      className="form-control border-start-0 ps-0 focus-ring focus-ring-light"
+                      placeholder="12.345.678-9"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="mb-3">
+                  <label htmlFor="telefono" className="form-label small fw-semibold">Teléfono</label>
+                  <div className="input-group">
+                    <span className="input-group-text bg-white text-muted border-end-0">
+                      <i className="bi bi-telephone"></i>
+                    </span>
+                    <input
+                      type="text" // Cambiado de 'telefono' a 'text' o 'tel'
+                      id="telefono"
+                      value={formData.telefono}
+                      onChange={handleChange}
+                      className="form-control border-start-0 ps-0 focus-ring focus-ring-light"
+                      placeholder="+56 9"
+                      required
+                    />
+                  </div>
+                </div>
+
                 <div className="d-flex justify-content-center mt-4">
                   <span
                     className="text-center text-decoration-none"
-                    style={{ cursor: 'pointer', maxWidth: '300px', color: 'blue'  }}
+                    style={{ cursor: 'pointer', maxWidth: '300px', color: 'blue' }}
                     onClick={onSwitchForm}
                   >
                     ¿Ya tienes cuenta? Inicia Sesión
                   </span>
                 </div>
 
-
-								{/* Botón de Registro */}
-								<div className="text-center mt-4">
-									<button
-										type="submit"
-										className="btn btn-primary w-100 rounded-3 py-2 fw-bold text-uppercase"
-										style={{ maxWidth: '300px' }}
-									>
-										Register Now
-									</button>
-								</div>
-							</form>
-
-						</div>
-					</div>
-				</div>
-			</div>
-		</>
-	)
+                <div className="text-center mt-4">
+                  <button
+                    type="submit"
+                    className="btn btn-primary w-100 rounded-3 py-2 fw-bold text-uppercase d-flex justify-content-center align-items-center gap-2"
+                    style={{ maxWidth: '300px', margin: '0 auto' }}
+                    disabled={isLoading || success}
+                  >
+                    {isLoading ? (
+                      <>
+                        <span className="spinner-border spinner-border-sm" aria-hidden="true"></span>
+                        <span role="status">Registrando...</span>
+                      </>
+                    ) : (
+                      'Registrarse'
+                    )}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
+  )
 }
