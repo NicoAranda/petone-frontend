@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import toast from 'react-hot-toast';
 import './CreatePostModal.css';
 
-const CreatePostModal = ({ isOpen, onClose }) => {
+const CreatePostModal = ({ isOpen, onClose, onCreated }) => {
   const [photos, setPhotos] = useState([]);
 
   const [nombre, setNombre] = useState("");
@@ -128,7 +128,11 @@ const CreatePostModal = ({ isOpen, onClose }) => {
       if (response.ok) {
         const data = await response.json();
         toast.success("¡Publicación creada con éxito!");
-        onClose();
+        if (onCreated) {
+          await onCreated(data)
+        } else {
+          onClose();
+        }
       } else {
         toast.error("Hubo un problema al publicar la mascota.");
       }
