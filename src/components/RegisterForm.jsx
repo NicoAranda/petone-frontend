@@ -1,12 +1,12 @@
 import React from 'react'
 
-export const RegisterForm = () => {
+export const RegisterForm = ({ onSwitchForm }) => {
 	return (
 		<>
 			<div className="vh-100 d-flex align-items-center justify-content-center p-3">
 				{/* Contenedor principal estilo tarjeta */}
 				<div
-					className="card rounded-4 shadow-lg w-100 overflow-hidden border-0"
+					className="card rounded-4 shadow-lg w-100 overflow-hidden border-0 fade-in-bckg"
 					style={{ maxWidth: '1000px' }}
 				>
 					<div className="row g-0">
@@ -135,6 +135,17 @@ export const RegisterForm = () => {
 										/>
 									</div>
 								</div>
+
+								{/* Enlace para cambiar a Login */}
+                <div className="d-flex justify-content-center mt-4">
+                  <span
+                    className="text-center text-decoration-none"
+                    style={{ cursor: 'pointer', maxWidth: '300px', color: 'blue'  }}
+                    onClick={onSwitchForm}
+                  >
+                    ¿Ya tienes cuenta? Inicia Sesión
+                  </span>
+                </div>
 
 
 								{/* Botón de Registro */}

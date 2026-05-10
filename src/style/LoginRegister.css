@@ -4,3 +4,25 @@
 	background-position: center;
 	background-repeat: no-repeat;
 }
+.fondoLogin{
+    background-image: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('../assets/images/LoginForm.jpg');
+    background-size: cover;
+	background-position: center;
+	background-repeat: no-repeat;
+}
+
+/* Animación para suavizar la entrada de los formularios */
+.fade-in-bckg {
+  animation: fadeIn 0.4s ease-out forwards;
+}
+
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(15px); /* Empieza un poquito más abajo */
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0); /* Sube a su posición original */
+  }
+}
