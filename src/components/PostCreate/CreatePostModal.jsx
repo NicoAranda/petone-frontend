@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import toast from 'react-hot-toast';
 import './CreatePostModal.css';
 
-const CreatePostModal = ({ isOpen, onClose, onSuccess }) => {
+const CreatePostModal = ({ isOpen, onClose, onCreated }) => {
   const [photos, setPhotos] = useState([]);
 
   const [nombre, setNombre] = useState("");
@@ -128,6 +128,11 @@ const CreatePostModal = ({ isOpen, onClose, onSuccess }) => {
       if (response.ok) {
         const data = await response.json();
         toast.success("¡Publicación creada con éxito!");
+        if (onCreated) {
+          await onCreated(data)
+        } else {
+          onClose();
+        }
         // notify parent to refresh posts
         try { if (onSuccess) onSuccess(); } catch (e) { console.error(e); }
         onClose();
