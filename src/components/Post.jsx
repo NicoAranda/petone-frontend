@@ -1,23 +1,44 @@
 import React from 'react';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 
-const Post = () => {
+const Post = ({ post = {} }) => {
+  const img = post.fotos && post.fotos.length > 0 ? post.fotos[0] : 'https://png.pngtree.com/png-vector/20250111/ourmid/pngtree-golden-retriever-dog-pictures-png-image_15147078.png'
+  const location = post.ubicacion || 'Ubicación desconocida'
+  const title = post.nombre || 'Usuario'
+  const description = post.descripcion || ''
+  const tags = post.especie ? `#${post.especie}` : ''
+
+  const timeAgo = (dateStr) => {
+    if (!dateStr) return ''
+    const seconds = Math.floor((new Date() - new Date(dateStr)) / 1000)
+    let interval = Math.floor(seconds / 31536000)
+    if (interval >= 1) return `HACE ${interval} AÑOS`
+    interval = Math.floor(seconds / 2592000)
+    if (interval >= 1) return `HACE ${interval} MESES`
+    interval = Math.floor(seconds / 86400)
+    if (interval >= 1) return `HACE ${interval} DÍAS`
+    interval = Math.floor(seconds / 3600)
+    if (interval >= 1) return `HACE ${interval} HORAS`
+    interval = Math.floor(seconds / 60)
+    if (interval >= 1) return `HACE ${interval} MINUTOS`
+    return `HACE ${seconds} SEGUNDOS`
+  }
+
   return (
-    
     <div className="card mb-4 mx-auto shadow-sm" style={{ maxWidth: '470px', backgroundColor: '#ffffff', borderColor: '#e0e0e0', borderRadius: '12px' }}>
       
       {/*Cabecera del Post*/}
       <div className="card-header bg-transparent border-0 d-flex justify-content-between align-items-center p-3">
-        <div className="d-flex align-items-center gap-2">
+          <div className="d-flex align-items-center gap-2">
           <img 
-            src="https://ui-avatars.com/api/?name=MP&background=198754&color=fff" 
+            src={`https://ui-avatars.com/api/?name=${encodeURIComponent(title)}&background=198754&color=fff`} 
             alt="Perfil" 
             className="rounded-circle" 
             style={{ width: '32px', height: '32px', objectFit: 'cover' }} 
           />
           <div className="d-flex flex-column lh-1">
-            <span className="fw-bold text-dark" style={{ fontSize: '14px' }}>MascotasPerdidasCDMX</span>
-            <span className="text-muted" style={{ fontSize: '12px' }}>Parque Chapultepec, CDMX</span>
+            <span className="fw-bold text-dark" style={{ fontSize: '14px' }}>{title}</span>
+            <span className="text-muted" style={{ fontSize: '12px' }}>{location}</span>
           </div>
         </div>
         <button className="btn btn-link text-dark p-0">
@@ -27,7 +48,7 @@ const Post = () => {
 
       {/*Imagen Principal*/}
       <img 
-        src="https://png.pngtree.com/png-vector/20250111/ourmid/pngtree-golden-retriever-dog-pictures-png-image_15147078.png" 
+        src={img} 
         className="card-img-top rounded-0" 
         alt="Publicación de mascota" 
         style={{ borderTop: '1px solid #e0e0e0', borderBottom: '1px solid #e0e0e0' }}
@@ -46,22 +67,24 @@ const Post = () => {
           </div>
         </div>
 
-        <p className="fw-bold mb-1" style={{ fontSize: '14px' }}>2,500 Me gusta</p>
+        <p className="fw-bold mb-1" style={{ fontSize: '14px' }}>{post.likes || '0'} Me gusta</p>
 
         <p className="mb-1" style={{ fontSize: '14px' }}>
-          <span className="fw-bold me-2 cursor-pointer">MascotasPerdidasCDMX</span>
-          ¡Ayúdanos a encontrar a Boby! Se perdió cerca del parque central. Lleva collar azul.
+          <span className="fw-bold me-2 cursor-pointer">{title}</span>
+          {description}
         </p>
 
-        <p className="mb-2 fw-semibold" style={{ color: '#198754', fontSize: '14px' }}>
-          #Boby #PerroPerdido #BusquedaMascotas
-        </p>
+        {tags && (
+          <p className="mb-2 fw-semibold" style={{ color: '#198754', fontSize: '14px' }}>
+            {tags}
+          </p>
+        )}
 
         <a href="#!" className="text-muted text-decoration-none d-block mb-1" style={{ fontSize: '14px' }}>
           Ver los 320 comentarios
         </a>
         <p className="text-muted mb-3" style={{ fontSize: '12px' }}>
-          HACE 2 HORAS
+          {timeAgo(post.fechaPublicacion)}
         </p>
       </div>
 
