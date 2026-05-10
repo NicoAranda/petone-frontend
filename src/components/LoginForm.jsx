@@ -2,7 +2,6 @@ import React, { useState } from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
 import toast from 'react-hot-toast';
 
-
 export const LoginForm = ({ onSwitchForm }) => {
 
 	const [email, setEmail] = useState('')
@@ -16,6 +15,25 @@ export const LoginForm = ({ onSwitchForm }) => {
 	const handleSubmit = async (e) => {
 		e.preventDefault();
 		setError(null);
+
+		// Evitar correos vacíos o con solo espacios
+		if (!email.trim()) {
+			setError('El correo electrónico es obligatorio.');
+			return;
+		}
+
+		// Validar formato de email
+		const emailRegex = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
+		if (!emailRegex.test(email)) {
+			setError('Por favor, ingresa un formato de correo válido (ej: usuario@correo.com).');
+			return;
+		}
+
+		// Evitar contraseñas vacías
+		if (!password.trim()) {
+			setError('La contraseña es obligatoria.');
+			return;
+		}
 		setIsLoading(true);
 
 		try {
@@ -29,7 +47,7 @@ export const LoginForm = ({ onSwitchForm }) => {
 			});
 
 			if (!response.ok) {
-				throw new Error('Credenciales inválidas. Verifica tu correo y contraseña')
+				throw new Error('Credenciales inválidas. Verifica tu correo y contraseña.')
 			}
 
 			const data = await response.json();
@@ -115,7 +133,7 @@ export const LoginForm = ({ onSwitchForm }) => {
 										style={{ cursor: 'pointer', maxWidth: '300px', color: 'blue' }}
 										onClick={onSwitchForm}
 									>
-										¿No tienes cuenta? Registrate
+										¿No tienes cuenta? Regístrate
 									</span>
 								</div>
 								{/* Botón de Registro */}

@@ -19,13 +19,58 @@ export const RegisterForm = ({ onSwitchForm }) => {
   const handleChange = (e) => {
     const { id, value } = e.target;
     // CORRECCIÓN 1: formData bien escrito
-    setFormData({ ...formData, [id]: value }); 
+    setFormData({ ...formData, [id]: value });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
     setSuccess(false);
+
+    // Validar que ningún campo obligatorio esté compuesto solo por espacios
+    if (
+      !formData.nombre.trim() ||
+      !formData.apellido.trim() ||
+      !formData.email.trim() ||
+      !formData.rut.trim() ||
+      !formData.telefono.trim()
+    ) {
+      setError('Por favor, completa todos los campos correctamente.');
+      return;
+    }
+
+    // Validar formato de email con Regex
+    const emailRegex = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
+    if (!emailRegex.test(formData.email)) {
+      setError('Por favor, ingresa un formato de correo válido (ej: usuario@correo.com).');
+      return;
+    }
+
+    // Validar longitud de la contraseña
+    if (formData.password.length < 6) {
+      setError('La contraseña debe tener al menos 6 caracteres.');
+      return;
+    }
+
+    // Validar que las contraseñas coincidan
+    if (formData.password !== formData.confirmPassword) {
+      setError("Las contraseñas no coinciden.");
+      return;
+    }
+
+    // Validar RUT (Acepta formato con o sin puntos, pero exige guion y dígito verificador)
+    const rutRegex = /^[\d.]{7,10}-[\dkK]{1}$/i;
+    if (!rutRegex.test(formData.rut)) {
+      setError('Ingresa un RUT válido con guion (ej: 12.345.678-9 o 12345678-9).');
+      return;
+    }
+
+    // Validar Teléfono (Acepta un '+' opcional al inicio, seguido de 8 a 15 números o espacios)
+    const telefonoRegex = /^\+?[0-9\s]{8,15}$/;
+    if (!telefonoRegex.test(formData.telefono)) {
+      setError('Ingresa un número de teléfono válido (ej: +56912345678).');
+      return;
+    }
 
     if (formData.password !== formData.confirmPassword) {
       setError("Las contraseñas no coinciden");
@@ -45,7 +90,7 @@ export const RegisterForm = ({ onSwitchForm }) => {
           nombre: formData.nombre,
           apellido: formData.apellido,
           email: formData.email,
-          password: formData.password, // CORRECCIÓN 2: Sin la 'e' extra
+          password: formData.password,
           rut: formData.rut,
           telefono: formData.telefono
         }),
@@ -53,7 +98,29 @@ export const RegisterForm = ({ onSwitchForm }) => {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => null);
-        throw new Error(errorData?.message || 'Error al registrar el usuario. Verifica los datos.');
+
+        if (errorData) {
+          // 1. Si Spring Boot manda errores de validación de campos (@Valid), suele venir en un arreglo 'errors'
+          if (errorData.errors && Array.isArray(errorData.errors)) {
+            throw new Error(errorData.errors[0].defaultMessage || "Verifica los datos ingresados.");
+          }
+          
+          // 2. Si configuraste un mensaje personalizado en tu backend y no es el genérico de Spring
+          if (errorData.message && !errorData.message.includes("Validation failed")) {
+            throw new Error(errorData.message);
+          }
+
+          // 3. Si mandas un mapa (Map<String, String>) con errores, filtramos la basura de Spring Boot
+          const clavesIgnoradas = ['timestamp', 'status', 'error', 'path', 'message'];
+          const erroresReales = Object.entries(errorData).filter(([key]) => !clavesIgnoradas.includes(key));
+          
+          if (erroresReales.length > 0) {
+             throw new Error(erroresReales[0][1]); // Mostramos el valor del primer error real
+          }
+        }
+
+        // Fallback genérico si no se pudo extraer un mensaje claro
+        throw new Error('El correo o el RUT ya están registrados.');
       }
 
       setSuccess(true);
@@ -101,7 +168,6 @@ export const RegisterForm = ({ onSwitchForm }) => {
                       <span className="input-group-text bg-white text-muted border-end-0">
                         <i className="bi bi-person"></i>
                       </span>
-                      {/* CORRECCIÓN 3: id coincide con el estado, agregado value y onChange */}
                       <input
                         type="text"
                         id="nombre"
