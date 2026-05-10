@@ -9,6 +9,8 @@ import Privacy from './pages/Privacy'
 import CreatePostModal from './components/PostCreate/CreatePostModal' 
 import { AboutUsPage } from './pages/AboutUsPage'
 import { Toaster } from 'react-hot-toast'
+import AdminDashboard from './pages/AdminDashboard'
+import AdminLogin from './pages/AdminLogin'
 
 function App() {
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -50,6 +52,8 @@ function App() {
             <Route path="/terms" element={<Terms />}/>
             <Route path="/privacy" element={<Privacy />}/>
             <Route path="/about" element={<AboutUsPage />}/>
+            <Route path="/admin/login" element={<AdminLogin />} />
+            <Route path="/admin" element={<AdminDashboard />} />
           </Routes>
         </div>
         <Footer />

@@ -21,6 +21,7 @@ export const SideBar = ({ onOpenModal }) => {
     { icon: "bi-house-fill", label: "Inicio", path: "/HomePage" },
     { icon: "bi-info-circle-fill", label: "Sobre Nosotros", path: "/about" },
     { icon: "bi-plus-circle-fill", label: "Crear publicación", action: onOpenModal },
+    { icon: "bi-shield-lock-fill", label: "Administración", path: "/admin" },
     { icon: "bi-chat-fill", label: "Mensajes", path: "/mensajes" },
     { icon: "bi-search", label: "Buscar", path: "/buscar" },
   ]
