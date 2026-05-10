@@ -1,7 +1,51 @@
-import React from 'react'
-import { NavLink } from 'react-router-dom'
+import React, { useState } from 'react'
+import { NavLink, useNavigate } from 'react-router-dom'
+import toast from 'react-hot-toast';
+
 
 export const LoginForm = ({ onSwitchForm }) => {
+
+	const [email, setEmail] = useState('')
+	const [password, setPassword] = useState('')
+
+	const [error, setError] = useState(null)
+	const [isLoading, setIsLoading] = useState(false)
+
+	const navigate = useNavigate()
+
+	const handleSubmit = async (e) => {
+		e.preventDefault();
+		setError(null);
+		setIsLoading(true);
+
+		try {
+			const api_url = 'http://localhost:8080/api/usuarios/login'
+			const response = await fetch(api_url, {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify({ email, password }),
+			});
+
+			if (!response.ok) {
+				throw new Error('Credenciales inválidas. Verifica tu correo y contraseña')
+			}
+
+			const data = await response.json();
+
+			localStorage.setItem('token', data.token);
+
+			toast.success("¡Inicio de sesión exitoso!");
+			navigate('/HomePage')
+
+		} catch (err) {
+			setError(err.message);
+		} finally {
+			setIsLoading(false);
+		}
+	}
+
 	return (
 		<>
 			<div className="vh-100 d-flex align-items-center justify-content-center p-3">
@@ -18,7 +62,15 @@ export const LoginForm = ({ onSwitchForm }) => {
 								<h1 className="fw-bold fs-2 text-dark">Iniciar Sesión</h1>
 								<p className="text-muted"></p>
 							</div>
-							<form>
+
+							{error && (
+								<div className='alert alert-danger py-2 small' role='alert'>
+									<i className='bi bi-exclamation-triangle-fill me-2'></i>
+									{error}
+								</div>
+							)}
+
+							<form onSubmit={handleSubmit}>
 								{/* Email */}
 								<div className="mb-3">
 									<label htmlFor="email" className="form-label small fw-semibold">Email</label>
@@ -30,7 +82,10 @@ export const LoginForm = ({ onSwitchForm }) => {
 											type="email"
 											id="email"
 											className="form-control border-start-0 ps-0 focus-ring focus-ring-light"
-											placeholder="johnsmith@example.com"
+											placeholder="juanperez@ejemplo.com"
+											value={email}
+											onChange={(e) => setEmail(e.target.value)}
+											required
 										/>
 									</div>
 								</div>
@@ -47,6 +102,9 @@ export const LoginForm = ({ onSwitchForm }) => {
 											id="password"
 											className="form-control border-start-0 ps-0 focus-ring focus-ring-light"
 											placeholder="************"
+											value={password}
+											onChange={(e) => setPassword(e.target.value)}
+											required
 										/>
 									</div>
 								</div>
@@ -62,14 +120,21 @@ export const LoginForm = ({ onSwitchForm }) => {
 								</div>
 								{/* Botón de Registro */}
 								<div className="text-center mt-4">
-									<span
+									<button
 										type="submit"
-										className="btn btn-primary w-100 rounded-3 py-2 fw-bold text-uppercase"
-										style={{ cursor: 'pointer', maxWidth: '300px' }}
-										onClick={onSwitchForm}
+										className="btn btn-primary w-100 rounded-3 py-2 fw-bold text-uppercase d-flex justify-content-center align-items-center gap-2"
+										style={{ maxWidth: '300px', margin: '0 auto' }}
+										disabled={isLoading}
 									>
-										Iniciar Sesión
-									</span>
+										{isLoading ? (
+											<>
+												<span className="spinner-border spinner-border-sm" aria-hidden="true"></span>
+												<span role="status">Cargando...</span>
+											</>
+										) : (
+											'Iniciar Sesión'
+										)}
+									</button>
 								</div>
 							</form>
 						</div>
