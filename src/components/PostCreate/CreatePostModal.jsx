@@ -133,6 +133,9 @@ const CreatePostModal = ({ isOpen, onClose, onCreated }) => {
         } else {
           onClose();
         }
+        // notify parent to refresh posts
+        try { if (onSuccess) onSuccess(); } catch (e) { console.error(e); }
+        onClose();
       } else {
         toast.error("Hubo un problema al publicar la mascota.");
       }

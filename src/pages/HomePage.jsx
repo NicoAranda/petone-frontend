@@ -2,7 +2,7 @@ import React from 'react';
 import { Stories } from '../components/StoriesBar/Stories';
 import Post from '../components/Post';
 
-export const HomePage = () => {
+export const HomePage = ({ posts = [], refreshPosts }) => {
   return (
     <>
       <div className="mb-4">
@@ -14,12 +14,15 @@ export const HomePage = () => {
 
           {/*Sección de Historias*/}
 
-          {/*Botón para crear publicación moved to sidebar*/}
-
           {/*Sección de Publicaciones*/}
           <div className="d-flex flex-column gap-4">
-            <Post />
-            <Post />
+            {posts.length === 0 ? (
+              <div className="text-center text-muted">No hay publicaciones aún.</div>
+            ) : (
+              posts.map(p => (
+                <Post key={p.id || Math.random()} post={p} />
+              ))
+            )}
           </div>
 
         </div>
