@@ -86,7 +86,7 @@ export const SideBar = ({ onOpenModal }) => {
         </div>
 
         {/* Parte inferior */}
-        <NavLink to={'/login'} className="d-flex flex-column gap-4 px-3">
+        <NavLink to={'/login'} className="d-flex flex-column gap-4 px-3 text-decoration-none">
           <div className="d-flex align-items-center gap-3" style={{ cursor: "pointer" }}>
             <i className="bi bi-person-fill fs-4 fw-bold text-dark"></i>
             <span className="fw-bold text-dark" style={{ opacity: hover ? 1 : 0, transition: "0.2s" }}>Perfil</span>

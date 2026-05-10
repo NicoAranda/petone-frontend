@@ -17,8 +17,8 @@ export const RegisterForm = ({ onSwitchForm }) => {
 						{/* Lado Derecho (Formulario) */}
 						<div className="col-md-6 p-4 p-md-5">
 							<div className="text-center mb-5">
-								<h1 className="fw-bold fs-2 text-dark">REGISTER</h1>
-								<p className="text-muted">Enter your information to register</p>
+								<h1 className="fw-bold fs-2 text-dark">Registrate</h1>
+								<p className="text-muted">Ingresa tu información para registrarte</p>
 							</div>
 
 							<form>
@@ -67,7 +67,7 @@ export const RegisterForm = ({ onSwitchForm }) => {
 											type="email"
 											id="email"
 											className="form-control border-start-0 ps-0 focus-ring focus-ring-light"
-											placeholder="johnsmith@example.com"
+											placeholder="juanperezs@example.com"
 										/>
 									</div>
 								</div>
