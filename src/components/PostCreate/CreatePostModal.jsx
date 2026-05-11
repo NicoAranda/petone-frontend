@@ -121,9 +121,13 @@ const CreatePostModal = ({ isOpen, onClose, onCreated }) => {
     try {
       const API_ULR = `${API}/publicaciones/con-imagenes`
 
+      const token = localStorage.getItem('token')
+      const headers = token ? { Authorization: `Bearer ${token}` } : {}
+
       const response = await fetch(API_ULR, {
         method: "POST",
         body: formData,
+        headers,
       });
 
       if (response.ok) {
@@ -134,10 +138,9 @@ const CreatePostModal = ({ isOpen, onClose, onCreated }) => {
         } else {
           onClose();
         }
-        // notify parent to refresh posts
-        try { if (onSuccess) onSuccess(); } catch (e) { console.error(e); }
-        onClose();
       } else {
+        const errText = await response.text().catch(() => null)
+        console.error('Upload failed', response.status, errText)
         toast.error("Hubo un problema al publicar la mascota.");
       }
     } catch (error) {
