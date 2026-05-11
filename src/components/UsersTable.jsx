@@ -6,11 +6,9 @@ const UsersTable = ({ usuarios = [], fetchUsuarios, API_USERS, loading }) => {
     const [userForm, setUserForm] = useState({ id: null, nombre: '', email: '', rol: '' });
     const [showEditModal, setShowEditModal] = useState(false);
     
-    // Nuevos estados para el modal de eliminación
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [userToDelete, setUserToDelete] = useState(null);
 
-    // Efecto para bloquear el scroll cuando un modal está abierto
     useEffect(() => {
         if (showEditModal || showDeleteModal) {
             document.body.style.overflow = 'hidden';
@@ -24,10 +22,20 @@ const UsersTable = ({ usuarios = [], fetchUsuarios, API_USERS, loading }) => {
     const handleUserSubmit = async (event) => {
         event.preventDefault();
         if (!userForm.id) return;
+
+        const token = localStorage.getItem('token');
+        if (!token) {
+            toast.error('Necesitas iniciar sesión para editar usuarios');
+            return;
+        }
+
         try {
             const response = await fetch(`${API_USERS}/${userForm.id}`, {
                 method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
                 body: JSON.stringify(userForm)
             });
             if (!response.ok) throw new Error('Error al actualizar usuario');
@@ -36,7 +44,6 @@ const UsersTable = ({ usuarios = [], fetchUsuarios, API_USERS, loading }) => {
             handleCloseModal();
         } catch (error) {
             console.error('Error updating usuario:', error);
-            // Toast de error personalizado
             toast.error("Error al actualizar usuario", {
                 style: { background: '#d32f2f', color: '#fff' },
                 iconTheme: { primary: '#fff', secondary: '#d32f2f' }
@@ -50,24 +57,34 @@ const UsersTable = ({ usuarios = [], fetchUsuarios, API_USERS, loading }) => {
         setShowEditModal(true);
     };
 
-    // Función para abrir el modal de eliminación
     const handleDeleteClick = (id) => {
         setUserToDelete(id);
         setShowDeleteModal(true);
     };
 
-    // Función que ejecuta la eliminación en la API
     const confirmDelete = async () => {
         if (!userToDelete) return;
+
+        const token = localStorage.getItem('token');
+        if (!token) {
+            toast.error('Necesitas iniciar sesión para eliminar usuarios');
+            return;
+        }
+
         try {
-            const response = await fetch(`${API_USERS}/${userToDelete}`, { method: 'DELETE' });
+            const response = await fetch(`${API_USERS}/${userToDelete}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                }
+            });
             if (!response.ok) throw new Error('Error al eliminar usuario');
             
             await fetchUsuarios();
             toast.success("Usuario eliminado correctamente");
         } catch (error) {
             console.error('Error deleting usuario:', error);
-            // Toast de error personalizado
             toast.error("Error al eliminar usuario", {
                 style: { background: '#d32f2f', color: '#fff' },
                 iconTheme: { primary: '#fff', secondary: '#d32f2f' }
@@ -136,7 +153,6 @@ const UsersTable = ({ usuarios = [], fetchUsuarios, API_USERS, loading }) => {
                 </table>
             </div>
 
-            {/* MODAL EDITAR USUARIO */}
             {showEditModal && (
                 <div className="admin-dashboard-modal-backdrop">
                     <div className="admin-dashboard-modal">
@@ -173,7 +189,6 @@ const UsersTable = ({ usuarios = [], fetchUsuarios, API_USERS, loading }) => {
                                     />
                                 </div>
                                 
-                                {/* NUEVO CAMPO ROL */}
                                 <div className="mb-3">
                                     <label className="form-label">Rol</label>
                                     <select
@@ -202,7 +217,6 @@ const UsersTable = ({ usuarios = [], fetchUsuarios, API_USERS, loading }) => {
                 </div>
             )}
 
-            {/* MODAL CONFIRMAR ELIMINACIÓN */}
             {showDeleteModal && (
                 <div className="admin-dashboard-modal-backdrop">
                     <div className="admin-dashboard-modal" style={{ maxWidth: '400px' }}>
