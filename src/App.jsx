@@ -41,7 +41,22 @@ function App() {
 
   return (
     <div className="d-flex min-vh-100" style={{ backgroundColor: '#f4f9f4', color: '#333' }}>
-      <Toaster position='top-center' reverseOrder={false}/>
+      <Toaster 
+        position='top-center' 
+        reverseOrder={false} 
+        toastOptions={{
+          error: {
+            style: {
+              background: '#d32f2f',
+              color: '#fff'
+            },
+            iconTheme: {
+              primary: '#fff',
+              secondary: '#d32f2f'
+            }
+          }
+        }}
+      />
       
       <SideBar onOpenModal={() => setIsModalOpen(true)} />
       
