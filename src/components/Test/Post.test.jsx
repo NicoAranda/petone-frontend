@@ -22,6 +22,7 @@ describe('Post (simple)', () => {
     expect(img).toBeInTheDocument()
     expect(img).toHaveAttribute('src', sample.fotos[0])
     expect(screen.getByText(/5\s*Me gusta/i)).toBeInTheDocument()
-    expect(screen.getByText(/Perro/i)).toBeInTheDocument()
+    const especieMatches = screen.getAllByText(/Perro/i)
+    expect(especieMatches.length).toBeGreaterThanOrEqual(1)
   })
 })

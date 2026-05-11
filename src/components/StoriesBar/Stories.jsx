@@ -42,6 +42,7 @@ export const Stories = () => {
         className="btn btn-light rounded-circle shadow-sm"
         onClick={prev}
         disabled={index === 0}
+        aria-label="chevron-left"
       >
         <i className="bi bi-chevron-left"></i>
       </button>
@@ -75,6 +76,7 @@ export const Stories = () => {
         className="btn btn-light rounded-circle shadow-sm"
         onClick={next}
         disabled={index >= maxIndex}
+        aria-label="chevron-right"
       >
         <i className="bi bi-chevron-right"></i>
       </button>

@@ -11,7 +11,7 @@ describe('PublicationsTable (simple)', () => {
 
     render(<PublicationsTable publicaciones={publicaciones} fetchPublicaciones={() => {}} API_PUBLICATIONS="/api" loading={false} />)
 
-    expect(screen.getByText(/Publicaciones/i)).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: /Publicaciones/i })).toBeInTheDocument()
     expect(screen.getByText(/Firulais/i)).toBeInTheDocument()
     expect(screen.getByText(/Santiago/i)).toBeInTheDocument()
   })
