@@ -14,21 +14,21 @@
 
 
 .modal-container {
-  background-color: #fff;
+  background-color: var(--color-surface);
   border-radius: 16px;
   width: 100%;
   max-width: 500px;
   max-height: 90vh;
   padding: 24px;
   overflow-y: auto;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.12);
 }
 
 
 .photo-upload-box {
-  border: 2px dashed #198754;
+  border: 2px dashed var(--color-primary);
   border-radius: 12px;
-  background-color: #f4f9f4;
+  background-color: var(--bs-light);
   position: relative;
   overflow: hidden;
   display: flex;
@@ -39,7 +39,7 @@
 }
 
 .photo-upload-box:hover {
-  background-color: #e8f5e9;
+  background-color: #e6f2ea;
 }
 
 .file-input {
@@ -85,9 +85,9 @@
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  background-color: white;
-  color: #198754;
-  border: 1px solid #e0e0e0;
+  background-color: #f7faf7;
+  color: var(--color-primary);
+  border: 1px solid #dfe5e0;
   border-radius: 50%;
   width: 32px;
   height: 32px;
@@ -96,13 +96,13 @@
   align-items: center;
   cursor: pointer;
   z-index: 2;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+  box-shadow: 0 2px 5px rgba(0,0,0,0.12);
   transition: 0.2s;
 }
 
 .carousel-btn:hover {
-  background-color: #f4f9f4;
-  color: #146c43;
+  background-color: #eef6ee;
+  color: var(--color-primary-dark);
 }
 
 .carousel-btn.left {

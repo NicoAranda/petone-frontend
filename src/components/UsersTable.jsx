@@ -224,7 +224,7 @@ const UsersTable = ({ usuarios = [], fetchUsuarios, API_USERS, loading }) => {
                             className="admin-dashboard-modal-header d-flex justify-content-between align-items-center" 
                             style={{ backgroundColor: '#eef7ee', borderBottom: '1px solid #d1e7dd' }}
                         >
-                            <h5 className="mb-0 text-success" style={{ color: '#0f5132' }}>Confirmar Eliminación</h5>
+                            <h5 className="mb-0 text-success" style={{ color: 'var(--color-primary-dark)' }}>Confirmar Eliminación</h5>
                         </div>
                         
                         <div className="admin-dashboard-modal-body text-center py-4" style={{ backgroundColor: '#f9fdf9' }}>

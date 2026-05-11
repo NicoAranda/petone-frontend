@@ -1,12 +1,17 @@
-import React from 'react';
+import React, { useState } from 'react';
 import 'bootstrap-icons/font/bootstrap-icons.css';
+import ReportModal from './ReportModal';
 
 const Post = ({ post = {} }) => {
-    const img = post.fotos && post.fotos.length > 0 ? post.fotos[0] : 'https://png.pngtree.com/png-vector/20250111/ourmid/pngtree-golden-retriever-dog-pictures-png-image_15147078.png';
+    const [activeIndex, setActiveIndex] = useState(0);
+    const [showReportModal, setShowReportModal] = useState(false);
+    const [showMenu, setShowMenu] = useState(false);
+    const fotos = post.fotos && post.fotos.length > 0 ? post.fotos : ['https://png.pngtree.com/png-vector/20250111/ourmid/pngtree-golden-retriever-dog-pictures-png-image_15147078.png'];
     const location = post.ubicacion || 'Ubicación desconocida';
     const title = post.nombre || 'Usuario';
     const description = post.descripcion || '';
     const tags = post.especie ? `#${post.especie}` : '';
+    const API_PUBLICATIONS = 'http://localhost:8080/api/publicaciones';
 
     const timeAgo = (dateStr) => {
         if (!dateStr) return '';
@@ -24,9 +29,17 @@ const Post = ({ post = {} }) => {
         return `HACE ${seconds} SEGUNDOS`;
     };
 
+    const handlePrev = () => {
+        setActiveIndex((prevIndex) => (prevIndex === 0 ? fotos.length - 1 : prevIndex - 1));
+    };
+
+    const handleNext = () => {
+        setActiveIndex((prevIndex) => (prevIndex === fotos.length - 1 ? 0 : prevIndex + 1));
+    };
+
     return (
         // 1. Agregamos width: '100%' al contenedor principal para forzar el ancho
-        <div className="card mb-4 mx-auto shadow-sm" style={{ width: '100%', maxWidth: '470px', backgroundColor: '#ffffff', borderColor: '#e0e0e0', borderRadius: '12px' }}>
+        <div className="card mb-4 mx-auto shadow-sm" style={{ width: '100%', maxWidth: '470px', backgroundColor: 'var(--color-surface)', borderColor: '#cbd9cd', borderRadius: '12px' }}>
             
             {/*Cabecera del Post*/}
             <div className="card-header bg-transparent border-0 d-flex justify-content-between align-items-center p-3">
@@ -42,25 +55,88 @@ const Post = ({ post = {} }) => {
                         <span className="text-muted" style={{ fontSize: '12px' }}>{location}</span>
                     </div>
                 </div>
-                <button className="btn btn-link text-dark p-0">
-                    <i className="bi bi-three-dots"></i>
-                </button>
+                <div className="dropdown">
+                    <button 
+                        className="btn btn-link text-dark p-0" 
+                        type="button"
+                        id={`dropdownMenu-${post.id}`}
+                        data-bs-toggle="dropdown"
+                        aria-expanded="false"
+                    >
+                        <i className="bi bi-three-dots"></i>
+                    </button>
+                    <ul className="dropdown-menu dropdown-menu-end" aria-labelledby={`dropdownMenu-${post.id}`}>
+                        <li>
+                            <a 
+                                className="dropdown-item" 
+                                href="#!" 
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    setShowReportModal(true);
+                                }}
+                            >
+                                <i className="bi bi-flag me-2"></i>
+                                Reportar publicación
+                            </a>
+                        </li>
+                    </ul>
+                </div>
             </div>
 
-            {/*Imagen Principal*/}
-            {/* 2. Forzamos el ancho de la imagen y usamos object-fit para evitar deformaciones */}
-            <img 
-                src={img} 
-                className="card-img-top rounded-0" 
-                alt="Publicación de mascota" 
-                style={{ 
-                    borderTop: '1px solid #e0e0e0', 
-                    borderBottom: '1px solid #e0e0e0',
-                    width: '100%', 
-                    aspectRatio: '1 / 1', // Opcional: Hace que todas las imágenes sean cuadradas perfectas
-                    objectFit: 'cover'    // Asegura que la imagen llene el cuadro sin achatarse
-                }}
-            />
+            {/*Imagen Principal o Carrusel*/}
+            {fotos.length === 1 ? (
+                <img 
+                    src={fotos[0]} 
+                    className="card-img-top rounded-0" 
+                    alt="Publicación de mascota" 
+                    style={{ 
+                        borderTop: '1px solid #e0e0e0', 
+                        borderBottom: '1px solid #e0e0e0',
+                        width: '100%', 
+                        aspectRatio: '1 / 1',
+                        objectFit: 'cover'
+                    }}
+                />
+            ) : (
+                <div id={`carousel-${post.id}`} className="carousel slide" style={{ borderTop: '1px solid #e0e0e0', borderBottom: '1px solid #e0e0e0' }}>
+                    <div className="carousel-inner">
+                        {fotos.map((foto, index) => (
+                            <div key={index} className={`carousel-item ${index === activeIndex ? 'active' : ''}`}>
+                                <img 
+                                    src={foto} 
+                                    className="d-block w-100" 
+                                    alt={`Imagen ${index + 1} de la publicación`} 
+                                    style={{ 
+                                        aspectRatio: '1 / 1',
+                                        objectFit: 'cover',
+                                        height: '470px'
+                                    }}
+                                />
+                            </div>
+                        ))}
+                    </div>
+                    <button className="carousel-control-prev" type="button" onClick={handlePrev}>
+                        <span className="carousel-control-prev-icon" aria-hidden="true"></span>
+                        <span className="visually-hidden">Previous</span>
+                    </button>
+                    <button className="carousel-control-next" type="button" onClick={handleNext}>
+                        <span className="carousel-control-next-icon" aria-hidden="true"></span>
+                        <span className="visually-hidden">Next</span>
+                    </button>
+                    <div className="carousel-indicators position-absolute bottom-0 mb-2">
+                        {fotos.map((_, index) => (
+                            <button
+                                key={index}
+                                type="button"
+                                className={`bg-white ${index === activeIndex ? 'active' : ''}`}
+                                style={{ width: '8px', height: '8px', borderRadius: '50%', border: 'none', margin: '0 2px' }}
+                                onClick={() => setActiveIndex(index)}
+                                aria-label={`Slide ${index + 1}`}
+                            ></button>
+                        ))}
+                    </div>
+                </div>
+            )}
 
             {/*Botones de Interacción*/}
             <div className="card-body p-3 pb-0 text-dark">
@@ -83,7 +159,7 @@ const Post = ({ post = {} }) => {
                 </p>
 
                 {tags && (
-                    <p className="mb-2 fw-semibold" style={{ color: '#198754', fontSize: '14px' }}>
+                    <p className="mb-2 fw-semibold" style={{ color: 'var(--color-primary)', fontSize: '14px' }}>
                         {tags}
                     </p>
                 )}
@@ -110,6 +186,14 @@ const Post = ({ post = {} }) => {
                     Publicar
                 </button>
             </div>
+
+            {/* Modal de Reporte */}
+            <ReportModal 
+                showReportModal={showReportModal} 
+                setShowReportModal={setShowReportModal} 
+                publicacionId={post.id}
+                API_PUBLICATIONS={API_PUBLICATIONS}
+            />
 
         </div>
     );

@@ -1,8 +1,8 @@
 .sidebar {
-  background-color: #ffffff;
-  color: #333333;
-  border-right: 1px solid #e9ecef;
-  box-shadow: 0 0 8px rgba(0,0,0,0.03);
+  background: linear-gradient(180deg, #dcefd9 0%, #b7e4c2 100%);
+  color: #15321f;
+  border-right: 1px solid rgba(33, 140, 71, 0.24);
+  box-shadow: 0 0 20px rgba(33, 140, 71, 0.12);
   z-index: 1000;
   width: var(--sidebar-width);
   transition: width 0.28s ease, background-color 0.2s ease;
@@ -17,4 +17,3 @@
   color: #333333 !important;
 }
 
-/* create-post styles removed to match menu item styles */

@@ -5,16 +5,19 @@ import '../style/AdminDashboard.css';
 // Importamos los componentes hijos que acabamos de crear
 import UsersTable from '../components/UsersTable';
 import PublicationsTable from '../components/PublicationsTable';
+import ReportsTable from '../components/ReportsTable';
 import { API } from '../lib/api'
 
 const AdminDashboard = () => {
     const [publicaciones, setPublicaciones] = useState([]);
     const [usuarios, setUsuarios] = useState([]);
+    const [reportes, setReportes] = useState([]);
     const [loading, setLoading] = useState(false);
     const isFetchedRef = useRef(false);
 
     const API_PUBLICATIONS = `${API}/publicaciones`;
     const API_USERS = `${API}/usuarios`;
+    const API_REPORTS = `${API}/reportes`;
 
     useEffect(() => {
         if (isFetchedRef.current) return;
@@ -105,6 +108,14 @@ const AdminDashboard = () => {
                         fetchPublicaciones={fetchPublicaciones}
                         API_PUBLICATIONS={API_PUBLICATIONS}
                         loading={loading}
+                    />
+                </div>
+
+                {/* Tabla de Reportes (Componente) */}
+                <div className="col-12">
+                    <ReportsTable
+                        fetchReports={() => {}}
+                        API_REPORTS={API_REPORTS}
                     />
                 </div>
 

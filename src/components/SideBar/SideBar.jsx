@@ -1,14 +1,11 @@
 import React, { useState, useEffect } from 'react'
-import logo from '../../assets/images/logo.png' // Asegúrate de que la ruta sea correcta
 import { NavLink, useNavigate } from 'react-router-dom'
-import { useAuth } from '../../context/AuthContext' // <-- Importamos nuestro hook
+import { useAuth } from '../../context/AuthContext'
 import './SideBar.css'
 
 export const SideBar = ({ onOpenModal }) => {
   const [hover, setHover] = useState(false)
-  
-  // Extraemos el estado y la función de logout del contexto
-  const { isAuthenticated, logout, user } = useAuth(); 
+  const { isAuthenticated, logout, user } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -29,10 +26,9 @@ export const SideBar = ({ onOpenModal }) => {
     { icon: "bi-search", label: "Buscar", path: "/buscar" },
   ]
 
-  // Función para manejar el cierre de sesión
   const handleLogout = () => {
     logout();
-    navigate('/login'); // Opcional: redirigir al login tras cerrar sesión
+    navigate('/login');
   }
 
   return (
@@ -43,7 +39,6 @@ export const SideBar = ({ onOpenModal }) => {
         className="d-flex flex-column justify-content-between position-fixed top-0 start-0 vh-100 py-3 sidebar"
       >
 
-        {/* Menú Superior */}
         <div className="d-flex flex-column gap-4 flex-grow-1 justify-content-center">
           {menuItems.map((item, index) => {
             if (item.action) {
@@ -78,13 +73,9 @@ export const SideBar = ({ onOpenModal }) => {
           })}
         </div>
 
-        {/* ========================================== */}
-        {/* Parte inferior: Renderizado Condicional    */}
-        {/* ========================================== */}
         <div className="d-flex flex-column gap-3 px-3 mb-3">
           {isAuthenticated ? (
             <>
-              {/* Botón Ver Perfil */}
               <NavLink to={'/perfil'} className="d-flex align-items-center gap-3 text-decoration-none" style={{ cursor: "pointer" }}>
                 <i className="bi bi-person-fill fs-4 fw-bold text-dark"></i>
                 <span className="fw-bold text-dark" style={{ opacity: hover ? 1 : 0, transition: "0.2s", whiteSpace: "nowrap" }}>
@@ -92,7 +83,6 @@ export const SideBar = ({ onOpenModal }) => {
                 </span>
               </NavLink>
               
-              {/* Botón Cerrar Sesión */}
               <div onClick={handleLogout} className="d-flex align-items-center gap-3 text-decoration-none" style={{ cursor: "pointer" }}>
                 <i className="bi bi-box-arrow-right fs-4 fw-bold text-danger"></i>
                 <span className="fw-bold text-danger" style={{ opacity: hover ? 1 : 0, transition: "0.2s", whiteSpace: "nowrap" }}>
@@ -102,7 +92,6 @@ export const SideBar = ({ onOpenModal }) => {
             </>
           ) : (
             <>
-              {/* Botón Iniciar Sesión */}
               <NavLink to={'/login'} className="d-flex align-items-center gap-3 text-decoration-none" style={{ cursor: "pointer" }}>
                 <i className="bi bi-box-arrow-in-right fs-4 fw-bold text-dark"></i>
                 <span className="fw-bold text-dark" style={{ opacity: hover ? 1 : 0, transition: "0.2s", whiteSpace: "nowrap" }}>

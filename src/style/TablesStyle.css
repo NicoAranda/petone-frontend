@@ -1,33 +1,32 @@
-
 .custom-green-table {
     border-collapse: separate;
     border-spacing: 0;
 }
 
 .custom-green-table thead th {
-    background-color: #d1e7dd !important;
-    color: #0f5132 !important; 
-    border-bottom: 2px solid #badbcc;
+    background-color: #dce9dc !important;
+    color: #144f2e !important;
+    border-bottom: 2px solid #b8d4bb;
     font-weight: 600;
 }
 
 .custom-green-table tbody tr:nth-of-type(odd) td {
-    background-color: #f9fdf9 !important;
-    color: #2c3e2e;
+    background-color: #f4faf4 !important;
+    color: #1c2f1f;
     transition: background-color 0.2s ease;
 }
 
 .custom-green-table tbody tr:nth-of-type(even) td {
-    background-color: #eef7ee !important;
-    color: #2c3e2e;
+    background-color: #edf6ee !important;
+    color: #1c2f1f;
     transition: background-color 0.2s ease;
 }
 
 .custom-green-table tbody tr:hover td {
-    background-color: #dcf0dc !important;
+    background-color: #d6e8d6 !important;
     cursor: pointer;
 }
 
 .custom-green-table tbody td {
-    border-bottom: 1px solid #e0ebe0;
+    border-bottom: 1px solid #cfdedf;
 }
