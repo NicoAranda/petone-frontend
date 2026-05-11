@@ -39,7 +39,7 @@ export const LoginForm = ({ onSwitchForm }) => {
 		setIsLoading(true);
 
 		try {
-			const api_url = 'http://localhost:8080/api/usuarios/login'
+			const api_url = 'http://localhost:8081/api/usuarios/login'
 			const response = await fetch(api_url, {
 				method: 'POST',
 				headers: {

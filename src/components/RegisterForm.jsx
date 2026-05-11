@@ -80,7 +80,7 @@ export const RegisterForm = ({ onSwitchForm }) => {
     setIsLoading(true);
 
     try {
-      const api_url = 'http://localhost:8080/api/usuarios/registro-cliente';
+      const api_url = 'http://localhost:8081/api/usuarios/registro-cliente';
       const response = await fetch(api_url, {
         method: 'POST',
         headers: {

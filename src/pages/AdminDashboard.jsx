@@ -13,7 +13,7 @@ const AdminDashboard = () => {
     const isFetchedRef = useRef(false);
 
     const API_PUBLICATIONS = 'http://localhost:8080/api/publicaciones';
-    const API_USERS = 'http://localhost:8080/api/usuarios';
+    const API_USERS = 'http://localhost:8081/api/usuarios';
 
     useEffect(() => {
         if (isFetchedRef.current) return;

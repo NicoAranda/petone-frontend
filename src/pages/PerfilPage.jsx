@@ -23,7 +23,7 @@ export const PerfilPage = () => {
           throw new Error("No se pudo obtener el ID del usuario desde el token.")
         }
 
-        const response = await fetch(`http://localhost:8080/api/usuarios/${userId}`, {
+        const response = await fetch(`http://localhost:8081/api/usuarios/${userId}`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
