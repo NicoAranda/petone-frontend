@@ -13,6 +13,7 @@ import { LoginRegister } from './pages/LoginRegister'
 import AdminDashboard from './pages/AdminDashboard'
 import AdminLogin from './pages/AdminLogin'
 import { PerfilPage } from './pages/PerfilPage'
+import { API } from './lib/api'
 
 function App() {
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -20,7 +21,7 @@ function App() {
 
   const refreshPosts = async () => {
     try {
-      const res = await fetch('http://localhost:8080/api/publicaciones')
+      const res = await fetch(`${API}/publicaciones`)
       if (!res.ok) throw new Error('Error fetching posts')
       const data = await res.json()
       // sort by fechaPublicacion desc if present

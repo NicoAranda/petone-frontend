@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import { API } from '../lib/api'
 
 export const PerfilPage = () => {
 
@@ -23,7 +24,7 @@ export const PerfilPage = () => {
           throw new Error("No se pudo obtener el ID del usuario desde el token.")
         }
 
-        const response = await fetch(`http://localhost:8081/api/usuarios/${userId}`, {
+        const response = await fetch(`${API}/usuarios/${userId}`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',

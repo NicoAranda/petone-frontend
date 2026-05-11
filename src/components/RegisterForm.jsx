@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { API } from '../lib/api'
 
 export const RegisterForm = ({ onSwitchForm }) => {
 
@@ -80,7 +81,7 @@ export const RegisterForm = ({ onSwitchForm }) => {
     setIsLoading(true);
 
     try {
-      const api_url = 'http://localhost:8081/api/usuarios/registro-cliente';
+      const api_url = `${API}/usuarios/registro-cliente`;
       const response = await fetch(api_url, {
         method: 'POST',
         headers: {

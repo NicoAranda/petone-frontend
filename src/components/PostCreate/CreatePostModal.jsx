@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import toast from 'react-hot-toast';
 import './CreatePostModal.css';
+import { API } from '../../lib/api'
 
 const CreatePostModal = ({ isOpen, onClose, onCreated }) => {
   const [photos, setPhotos] = useState([]);
@@ -118,7 +119,7 @@ const CreatePostModal = ({ isOpen, onClose, onCreated }) => {
     });
 
     try {
-      const API_ULR = "http://localhost:8080/api/publicaciones/con-imagenes"
+      const API_ULR = `${API}/publicaciones/con-imagenes`
 
       const response = await fetch(API_ULR, {
         method: "POST",

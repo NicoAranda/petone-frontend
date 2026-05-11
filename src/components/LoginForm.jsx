@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
 import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
+import { API } from '../lib/api'
 
 export const LoginForm = ({ onSwitchForm }) => {
 
@@ -39,7 +40,7 @@ export const LoginForm = ({ onSwitchForm }) => {
 		setIsLoading(true);
 
 		try {
-			const api_url = 'http://localhost:8081/api/usuarios/login'
+			const api_url = `${API}/usuarios/login`
 			const response = await fetch(api_url, {
 				method: 'POST',
 				headers: {

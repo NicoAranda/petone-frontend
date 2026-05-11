@@ -5,6 +5,7 @@ import '../style/AdminDashboard.css';
 // Importamos los componentes hijos que acabamos de crear
 import UsersTable from '../components/UsersTable';
 import PublicationsTable from '../components/PublicationsTable';
+import { API } from '../lib/api'
 
 const AdminDashboard = () => {
     const [publicaciones, setPublicaciones] = useState([]);
@@ -12,8 +13,8 @@ const AdminDashboard = () => {
     const [loading, setLoading] = useState(false);
     const isFetchedRef = useRef(false);
 
-    const API_PUBLICATIONS = 'http://localhost:8080/api/publicaciones';
-    const API_USERS = 'http://localhost:8081/api/usuarios';
+    const API_PUBLICATIONS = `${API}/publicaciones`;
+    const API_USERS = `${API}/usuarios`;
 
     useEffect(() => {
         if (isFetchedRef.current) return;
