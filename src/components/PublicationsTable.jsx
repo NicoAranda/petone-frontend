@@ -1,8 +1,25 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import toast from 'react-hot-toast';
+import '../style/TablesStyle.css';
 
 const PublicationsTable = ({ publicaciones, fetchPublicaciones, API_PUBLICATIONS, loading }) => {
     const [pubForm, setPubForm] = useState({ id: null, nombre: '', ubicacion: '', especie: '', sexo: '', estado: '', descripcion: '' });
     const [showEditPubModal, setShowEditPubModal] = useState(false);
+
+    // Nuevos estados para el modal de eliminación
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [pubToDelete, setPubToDelete] = useState(null);
+
+    // Efecto para bloquear el scroll cuando un modal está abierto
+    useEffect(() => {
+        if (showEditPubModal || showDeleteModal) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = 'unset';
+        }
+        // Limpieza al desmontar el componente
+        return () => { document.body.style.overflow = 'unset'; };
+    }, [showEditPubModal, showDeleteModal]);
 
     const handlePubSubmit = async (event) => {
         event.preventDefault();
@@ -14,11 +31,16 @@ const PublicationsTable = ({ publicaciones, fetchPublicaciones, API_PUBLICATIONS
                 body: JSON.stringify(pubForm)
             });
             if (!response.ok) throw new Error('Error al actualizar publicación');
-            await fetchPublicaciones(); 
+            await fetchPublicaciones();
+            toast.success("Publicación actualizada con éxito");
             handleClosePubModal();
         } catch (error) {
             console.error('Error updating publicación:', error);
-            alert('Error al actualizar publicación');
+            // Toast de error personalizado con fondo rojo
+            toast.error("Error al actualizar publicaciones", {
+                style: { background: '#d32f2f', color: '#fff' },
+                iconTheme: { primary: '#fff', secondary: '#d32f2f' }
+            });
         }
     };
 
@@ -27,15 +49,31 @@ const PublicationsTable = ({ publicaciones, fetchPublicaciones, API_PUBLICATIONS
         setShowEditPubModal(true);
     };
 
-    const handleDeletePub = async (id) => {
-        if (!window.confirm('¿Eliminar esta publicación?')) return;
+    // Función para abrir el modal de eliminación
+    const handleDeleteClick = (id) => {
+        setPubToDelete(id);
+        setShowDeleteModal(true);
+    };
+
+    // Función que ejecuta la eliminación en la API
+    const confirmDelete = async () => {
+        if (!pubToDelete) return;
         try {
-            const response = await fetch(`${API_PUBLICATIONS}/${id}`, { method: 'DELETE' });
+            const response = await fetch(`${API_PUBLICATIONS}/${pubToDelete}`, { method: 'DELETE' });
             if (!response.ok) throw new Error('Error al eliminar publicación');
+
             await fetchPublicaciones();
+            toast.success("Publicación eliminada correctamente");
         } catch (error) {
             console.error('Error deleting publicación:', error);
-            alert('Error al eliminar publicación');
+            // Toast de error personalizado con fondo rojo
+            toast.error("Error al eliminar publicación", {
+                style: { background: '#d32f2f', color: '#fff' },
+                iconTheme: { primary: '#fff', secondary: '#d32f2f' }
+            });
+        } finally {
+            setShowDeleteModal(false);
+            setPubToDelete(null);
         }
     };
 
@@ -52,14 +90,15 @@ const PublicationsTable = ({ publicaciones, fetchPublicaciones, API_PUBLICATIONS
                         <h2 className="h6 mb-1">Publicaciones</h2>
                         <small className="text-muted">Lista de publicaciones registradas en el sistema.</small>
                     </div>
-                    <button className="btn btn-outline-primary" onClick={fetchPublicaciones} disabled={loading}>
+                    <button className="btn btn-outline-success" onClick={fetchPublicaciones} disabled={loading}>
                         {loading ? 'Cargando...' : 'Actualizar Publicaciones'}
                     </button>
                 </div>
             </div>
+
             <div className="table-responsive">
-                <table className="table table-hover align-middle mb-0">
-                    <thead className="table-light">
+                <table className="table align-middle mb-0 custom-green-table">
+                    <thead>
                         <tr>
                             <th>#</th>
                             <th>Mascota</th>
@@ -83,7 +122,8 @@ const PublicationsTable = ({ publicaciones, fetchPublicaciones, API_PUBLICATIONS
                                     <button className="btn btn-sm btn-outline-secondary" onClick={() => handleEditPub(pub)}>
                                         Editar
                                     </button>
-                                    <button className="btn btn-sm btn-outline-danger" onClick={() => handleDeletePub(pub.id)}>
+                                    {/* Aquí llamamos al nuevo manejador del modal en lugar del window.confirm */}
+                                    <button className="btn btn-sm btn-outline-danger" onClick={() => handleDeleteClick(pub.id)}>
                                         Eliminar
                                     </button>
                                 </td>
@@ -93,7 +133,7 @@ const PublicationsTable = ({ publicaciones, fetchPublicaciones, API_PUBLICATIONS
                 </table>
             </div>
 
-            {/* MODAL PUBLICACIÓN */}
+            {/* MODAL EDITAR PUBLICACIÓN */}
             {showEditPubModal && (
                 <div className="admin-dashboard-modal-backdrop">
                     <div className="admin-dashboard-modal">
@@ -146,9 +186,44 @@ const PublicationsTable = ({ publicaciones, fetchPublicaciones, API_PUBLICATIONS
                                 </div>
                                 <div className="d-flex justify-content-end gap-2">
                                     <button type="button" className="btn btn-secondary" onClick={handleClosePubModal}>Cancelar</button>
-                                    <button type="submit" className="btn btn-primary">Guardar cambios</button>
+                                    <button type="submit" className="btn btn-success">Guardar cambios</button>
                                 </div>
                             </form>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* MODAL CONFIRMAR ELIMINACIÓN */}
+            {showDeleteModal && (
+                <div className="admin-dashboard-modal-backdrop">
+                    <div className="admin-dashboard-modal" style={{ maxWidth: '400px' }}>
+                        <div
+                            className="admin-dashboard-modal-header d-flex justify-content-between align-items-center"
+                            style={{ backgroundColor: '#eef7ee', borderBottom: '1px solid #d1e7dd' }}
+                        >
+                            <h5 className="mb-0 text-success" style={{ color: '#0f5132' }}>Confirmar Eliminación</h5>
+                        </div>
+
+                        <div className="admin-dashboard-modal-body text-center py-4" style={{ backgroundColor: '#f9fdf9' }}>
+                            <div className="mb-3">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="#d32f2f" viewBox="0 0 16 16">
+                                    <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z" />
+                                </svg>
+                            </div>
+                            <p className="mb-0" style={{ color: '#2c3e2e' }}>
+                                ¿Estás seguro de que deseas eliminar esta publicación? <br />
+                                <strong>Esta acción no se puede deshacer.</strong>
+                            </p>
+                        </div>
+
+                        <div className="d-flex justify-content-center gap-3 p-3" style={{ backgroundColor: '#f9fdf9', borderTop: '1px solid #e0ebe0' }}>
+                            <button type="button" className="btn btn-outline-secondary px-4" onClick={() => setShowDeleteModal(false)}>
+                                Cancelar
+                            </button>
+                            <button type="button" className="btn btn-danger px-4" onClick={confirmDelete}>
+                                Sí, eliminar
+                            </button>
                         </div>
                     </div>
                 </div>

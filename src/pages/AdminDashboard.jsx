@@ -1,4 +1,5 @@
 ﻿import React, { useEffect, useState, useRef } from 'react';
+import toast from 'react-hot-toast';
 import '../style/AdminDashboard.css';
 
 // Importamos los componentes hijos que acabamos de crear
@@ -34,7 +35,7 @@ const AdminDashboard = () => {
             setPublicaciones(sortedData);
         } catch (error) {
             console.error('Error fetching publicaciones:', error);
-            alert('Error al cargar publicaciones');
+            toast.error("Error al actualizar publicaciones");
         } finally {
             setLoading(false);
         }
@@ -64,7 +65,7 @@ const AdminDashboard = () => {
             setUsuarios(sortedData);
         } catch (error) {
             console.error('Error fetching usuarios:', error);
-            alert('Error al cargar usuarios');
+            toast.error("Error al cargar usuarios");
         } finally {
             setLoading(false);
         }
