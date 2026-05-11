@@ -8,7 +8,7 @@ export const SideBar = ({ onOpenModal }) => {
   const [hover, setHover] = useState(false)
   
   // Extraemos el estado y la función de logout del contexto
-  const { isAuthenticated, logout } = useAuth(); 
+  const { isAuthenticated, logout, user } = useAuth(); 
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -21,7 +21,10 @@ export const SideBar = ({ onOpenModal }) => {
     { icon: "bi-house-fill", label: "Inicio", path: "/HomePage" },
     { icon: "bi-info-circle-fill", label: "Sobre Nosotros", path: "/about" },
     { icon: "bi-plus-circle-fill", label: "Crear publicación", action: onOpenModal },
-    { icon: "bi-shield-lock-fill", label: "Administración", path: "/admin" },
+    ...(isAuthenticated && user?.rol === 'ADMIN' 
+      ? [{ icon: "bi-shield-lock-fill", label: "Administración", path: "/admin" }] 
+      : []
+    ),
     { icon: "bi-chat-fill", label: "Mensajes", path: "/mensajes" },
     { icon: "bi-search", label: "Buscar", path: "/buscar" },
   ]
