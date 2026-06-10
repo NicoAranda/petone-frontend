@@ -1,0 +1,24 @@
+.profile-nav-link {
+  color: #6c757d !important;
+  border-radius: 12px !important;
+  transition: all 0.25s ease;
+  font-weight: 600;
+}
+
+.profile-nav-link:hover {
+  background-color: #f8f9fa !important;
+  color: #198754 !important;
+  transform: translateY(-2px);
+}
+
+.profile-nav-link.active {
+  background: linear-gradient(
+    135deg,
+    #11998e 0%,
+    #38ef7d 100%
+  ) !important;
+
+  color: white !important;
+
+  box-shadow: 0 4px 12px rgba(17, 153, 142, 0.3);
+}
