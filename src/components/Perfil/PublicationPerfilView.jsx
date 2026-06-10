@@ -43,7 +43,7 @@ export const PublicationPerfilView = ({ publicaciones = [] }) => {
               <img
                 src={primeraImagen}
                 alt={post.nombre}
-                className="w-100 h-100 object-fit-cover"
+                className="publication-grid-image"
               />
             </div>
           </div>
