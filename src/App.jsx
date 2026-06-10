@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react' // 1. Importamos React y hooks
+import React, { useState, useEffect } from 'react'
 import { Navigate, Route, Routes } from 'react-router-dom'
 import { SideBar } from './components/SideBar/SideBar'
 import { HomePage } from './pages/HomePage'
@@ -13,11 +13,14 @@ import { LoginRegister } from './pages/LoginRegister'
 import AdminDashboard from './pages/AdminDashboard'
 import AdminLogin from './pages/AdminLogin'
 import { PerfilPage } from './pages/PerfilPage'
+import PerfilPublicoPage from './pages/PerfilPublicoPage'
+import SearchUsersModal from './components/UsersSearch/SearchUsersModal'
 import { API } from './lib/api'
 import { PostDetailPage } from './pages/PostDetailPage'
 
 function App() {
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [isSearchOpen, setIsSearchOpen] = useState(false)
   const [posts, setPosts] = useState([])
 
   const refreshPosts = async () => {
@@ -60,7 +63,7 @@ function App() {
         }}
       />
       
-      <SideBar onOpenModal={() => setIsModalOpen(true)} />
+      <SideBar onOpenModal={() => setIsModalOpen(true)} onOpenSearch={() => setIsSearchOpen(true)} />
       
       <div className="main-area flex-grow-1 d-flex flex-column">
         <div className="flex-grow-1">
@@ -75,10 +78,11 @@ function App() {
             <Route path="/admin/login" element={<AdminLogin />} />
             <Route path="/admin" element={<AdminDashboard />} />
             <Route path="/perfil" element={<PerfilPage />} />
+            <Route path="/perfil/:id" element={<PerfilPublicoPage />} />
             <Route path="/post/:id" element={<PostDetailPage />} />
           </Routes>
+          <SearchUsersModal isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
         </div>
-        {/* <Footer /> */}
       </div>
       
       <CreatePostModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onCreated={refreshPosts} />

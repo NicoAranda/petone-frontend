@@ -3,7 +3,7 @@ import { NavLink, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import './SideBar.css'
 
-export const SideBar = ({ onOpenModal }) => {
+export const SideBar = ({ onOpenModal, onOpenSearch }) => {
   const [hover, setHover] = useState(false)
   const { isAuthenticated, logout, user } = useAuth();
   const navigate = useNavigate();
@@ -23,7 +23,7 @@ export const SideBar = ({ onOpenModal }) => {
       : []
     ),
     { icon: "bi-chat-fill", label: "Mensajes", path: "/mensajes" },
-    { icon: "bi-search", label: "Buscar", path: "/buscar" },
+    { icon: "bi-search", label: "Buscar", action: onOpenSearch },
   ]
 
   const handleLogout = () => {
