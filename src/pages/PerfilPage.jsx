@@ -11,11 +11,16 @@ export const PerfilPage = () => {
 
   const [userData, setUserData] = useState(null);
   const [publicaciones, setPublicaciones] = useState([]);
+  const [loadingPublicaciones, setLoadingPublicaciones] = useState(true);
 
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
   const [activeTab, setActiveTab] = useState('publicaciones');
+
+
+
+
 
   useEffect(() => {
 
@@ -152,11 +157,10 @@ export const PerfilPage = () => {
 
             <li className="nav-item">
               <button
-                className={`nav-link profile-nav-link ${
-                  activeTab === 'publicaciones'
-                    ? 'active'
-                    : ''
-                }`}
+                className={`nav-link profile-nav-link ${activeTab === 'publicaciones'
+                  ? 'active'
+                  : ''
+                  }`}
                 onClick={() =>
                   setActiveTab('publicaciones')
                 }
@@ -167,11 +171,10 @@ export const PerfilPage = () => {
 
             <li className="nav-item">
               <button
-                className={`nav-link profile-nav-link ${
-                  activeTab === 'mascotas'
-                    ? 'active'
-                    : ''
-                }`}
+                className={`nav-link profile-nav-link ${activeTab === 'mascotas'
+                  ? 'active'
+                  : ''
+                  }`}
                 onClick={() =>
                   setActiveTab('mascotas')
                 }
@@ -182,11 +185,10 @@ export const PerfilPage = () => {
 
             <li className="nav-item">
               <button
-                className={`nav-link profile-nav-link ${
-                  activeTab === 'guardados'
-                    ? 'active'
-                    : ''
-                }`}
+                className={`nav-link profile-nav-link ${activeTab === 'guardados'
+                  ? 'active'
+                  : ''
+                  }`}
                 onClick={() =>
                   setActiveTab('guardados')
                 }
