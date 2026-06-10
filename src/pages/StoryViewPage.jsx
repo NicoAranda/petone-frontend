@@ -76,28 +76,20 @@ export const StoryViewPage = () => {
         >
 
           {stories.map((story, idx) => {
-
             const isActive = idx === current;
-
             return (
-
               <div
                 key={story.id}
                 className={`story-view-item ${isActive ? 'active' : ''}`}
               >
-
                 <div className="story-main-card">
-
                   <div className="position-absolute top-0 start-0 w-100 p-3 z-2">
-
                     <div className="story-progress-bar">
                       <div className="story-progress-fill"></div>
                     </div>
-
                   </div>
 
                   <div className="position-absolute top-0 start-0 d-flex align-items-center gap-2 p-3 mt-3 z-2 w-100 text-white">
-
                     <img
                       src={story.avatar}
                       alt="avatar"
@@ -107,7 +99,6 @@ export const StoryViewPage = () => {
                         height: '38px'
                       }}
                     />
-
                     <div
                       className="d-flex flex-column"
                       style={{
@@ -115,7 +106,6 @@ export const StoryViewPage = () => {
                           '1px 1px 3px rgba(0,0,0,0.8)'
                       }}
                     >
-
                       <span className="fw-bold">
                         {story.name}
                       </span>
@@ -123,9 +113,7 @@ export const StoryViewPage = () => {
                       <small>
                         🐾 {story.post.nombre}
                       </small>
-
                     </div>
-
                   </div>
 
                   <img
@@ -135,19 +123,72 @@ export const StoryViewPage = () => {
                   />
 
                   <div
+                    className="story-repost-container position-absolute top-50 start-50 translate-middle"
+                    style={{
+                      width: '85%',
+                      maxWidth: '350px'
+                    }}
+                  >
+
+                    {/* Blur detrás del repost */}
+                    <div className="story-repost-blur" />
+
+                    {/* Repost */}
+                    <div
+                      className="story-repost-card bg-white rounded-4 overflow-hidden shadow-lg"
+                      style={{
+                        cursor: 'pointer'
+                      }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+
+                        navigate('/post/' + story.post.id, {
+                          state: {
+                            post: story.post
+                          }
+                        });
+                      }}
+                    >
+
+                      <div className="p-3 border-bottom">
+                        <strong>
+                          {story.name}
+                        </strong>
+                      </div>
+
+                      <img
+                        src={story.img}
+                        alt=""
+                        className="w-100"
+                        style={{
+                          aspectRatio: '1/1',
+                          objectFit: 'cover'
+                        }}
+                      />
+
+                      <div className="p-3">
+
+                        <h6 className="fw-bold">
+                          {story.post.nombre}
+                        </h6>
+
+                        <small className="text-muted">
+                          Toca para ver la publicación
+                        </small>
+
+                      </div>
+
+                    </div>
+
+                  </div>
+
+                  <div
                     className="position-absolute bottom-0 start-0 w-100 p-4 text-white"
                     style={{
                       background:
                         'linear-gradient(transparent, rgba(0,0,0,.8))'
                     }}
                   >
-
-                    <h5>{story.post.nombre}</h5>
-
-                    <p className="mb-0">
-                      {story.post.descripcion}
-                    </p>
-
                   </div>
 
                 </div>

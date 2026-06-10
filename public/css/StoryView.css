@@ -214,3 +214,32 @@
   .story-arrow-btn.prev { left: 10px; z-index: 50; }
   .story-arrow-btn.next { right: 10px; z-index: 50; }
 }
+
+   /*REPOST ESTILO INSTAGRAM */
+.story-repost-container {
+  position: absolute;
+  overflow: visible;
+}
+
+.story-repost-blur {
+  position: absolute;
+
+  top: -120px;
+  left: -120px;
+  right: -120px;
+  bottom: -120px;
+
+  border-radius: 40px;
+
+  backdrop-filter: blur(35px);
+  -webkit-backdrop-filter: blur(35px);
+
+  background: rgba(255, 255, 255, 0.08);
+
+  z-index: 1;
+}
+
+.story-repost-card {
+  position: relative;
+  z-index: 2;
+}
