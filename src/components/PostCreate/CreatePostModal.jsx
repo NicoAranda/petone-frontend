@@ -134,10 +134,10 @@ const CreatePostModal = ({ isOpen, onClose, onCreated }) => {
         const data = await response.json();
         toast.success("¡Publicación creada con éxito!");
         if (onCreated) {
-          await onCreated(data)
-        } else {
-          onClose();
+          await onCreated(data);
         }
+        toast.success("¡Publicación creada con éxito!");
+        onClose();
       } else {
         const errText = await response.text().catch(() => null)
         console.error('Upload failed', response.status, errText)
@@ -303,8 +303,8 @@ const CreatePostModal = ({ isOpen, onClose, onCreated }) => {
             </textarea>
           </div>
 
-          <button 
-            type="submit" 
+          <button
+            type="submit"
             className="btn btn-success w-100 fw-bold rounded-pill py-2"
             disabled={loading}
           >

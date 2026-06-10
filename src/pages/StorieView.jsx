@@ -69,7 +69,7 @@ export const StorieView = () => {
 					className="story-arrow-btn"
 					onClick={prevStory}
 					disabled={current === 0}
-            >
+				>
 					❮
 				</div>
 
@@ -108,6 +108,57 @@ export const StorieView = () => {
 						alt="story"
 						className="w-100 h-100 object-fit-cover"
 					/>
+					<div
+						className="position-absolute top-50 start-50 translate-middle"
+						style={{
+							width: '85%',
+							maxWidth: '350px'
+						}}
+					>
+						<div
+							className="bg-white rounded-4 overflow-hidden shadow-lg"
+							onClick={() =>
+								navigate('/post/' + story.post.id, {
+									state: {
+										post: story.post
+									}
+								})
+							}
+							style={{
+								cursor: 'pointer'
+							}}
+						>
+
+							<div className="p-3 border-bottom">
+								<strong>
+									{story.name}
+								</strong>
+							</div>
+
+							<img
+								src={story.img}
+								alt=""
+								className="w-100"
+								style={{
+									aspectRatio: '1/1',
+									objectFit: 'cover'
+								}}
+							/>
+
+							<div className="p-3">
+
+								<h6 className="fw-bold">
+									{story.post.nombre}
+								</h6>
+
+								<small className="text-muted">
+									Toca para ver la publicación
+								</small>
+
+							</div>
+
+						</div>
+					</div>
 
 				</div>
 

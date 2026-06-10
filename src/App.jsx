@@ -14,6 +14,7 @@ import AdminDashboard from './pages/AdminDashboard'
 import AdminLogin from './pages/AdminLogin'
 import { PerfilPage } from './pages/PerfilPage'
 import { API } from './lib/api'
+import { PostDetailPage } from './pages/PostDetailPage'
 
 function App() {
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -74,12 +75,13 @@ function App() {
             <Route path="/admin/login" element={<AdminLogin />} />
             <Route path="/admin" element={<AdminDashboard />} />
             <Route path="/perfil" element={<PerfilPage />} />
+            <Route path="/post/:id" element={<PostDetailPage />} />
           </Routes>
         </div>
         {/* <Footer /> */}
       </div>
       
-      <CreatePostModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onSuccess={refreshPosts} />
+      <CreatePostModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onCreated={refreshPosts} />
       
     </div>
   )
