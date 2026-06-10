@@ -6,7 +6,7 @@ export const HomePage = ({ posts = [], refreshPosts }) => {
   return (
     <>
       <div className="mb-4">
-        <Stories />
+        <Stories posts={posts}/>
       </div>
       <div className="d-flex justify-content-center w-100 pt-4 min-vh-100">
 
