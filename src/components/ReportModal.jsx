@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import toast from 'react-hot-toast';
+import { API } from '../lib/api';
 import '../style/AdminDashboard.css';
 
-const ReportModal = ({ showReportModal, setShowReportModal, publicacionId, API_PUBLICATIONS }) => {
+const ReportModal = ({ showReportModal, setShowReportModal, publicacionId }) => {
     const [reportType, setReportType] = useState('');
     const [customReason, setCustomReason] = useState('');
     const [description, setDescription] = useState('');
@@ -45,7 +46,7 @@ const ReportModal = ({ showReportModal, setShowReportModal, publicacionId, API_P
                 descripcion: description
             };
 
-            const response = await fetch(`${API_PUBLICATIONS.replace('/api/publicaciones', '')}/api/reportes`, {
+            const response = await fetch(`${API}/reportes`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(reportData)

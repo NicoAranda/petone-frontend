@@ -1,14 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import ReportModal from './ReportModal';
+import toast from 'react-hot-toast';
+import { API } from '../lib/api';
 
 const Post = ({ post = {} }) => {
 
-    console.log(post)
-
     const [activeIndex, setActiveIndex] = useState(0);
     const [showReportModal, setShowReportModal] = useState(false);
-    const [showMenu, setShowMenu] = useState(false);
+    const [comentarios, setComentarios] = useState([]);
+    const [nuevoComentario, setNuevoComentario] = useState('');
+    const [loadingComentarios, setLoadingComentarios] = useState(false);
     const fotos = post.fotos && post.fotos.length > 0 ? post.fotos : ['https://png.pngtree.com/png-vector/20250111/ourmid/pngtree-golden-retriever-dog-pictures-png-image_15147078.png'];
     const location = post.ubicacion || 'Ubicación desconocida';
 
@@ -20,8 +22,64 @@ const Post = ({ post = {} }) => {
 
     const description = post.descripcion || '';
     const tags = post.especie ? `#${post.especie}` : '';
-    const API_PUBLICATIONS = 'http://localhost:8080/api/publicaciones';
 
+    useEffect(() => {
+        cargarComentarios();
+    }, [post.id]);
+
+    const cargarComentarios = async () => {
+        try {
+            setLoadingComentarios(true);
+            const response = await fetch(`${API}/publicaciones/${post.id}/comentarios`);
+            if (response.ok) {
+                const data = await response.json();
+                setComentarios(data);
+            }
+        } catch (error) {
+            console.error('Error al cargar comentarios:', error);
+        } finally {
+            setLoadingComentarios(false);
+        }
+    };
+
+    const handlePublicarComentario = async () => {
+        const token = localStorage.getItem('token');
+        
+        if (!token) {
+            toast.error('Debes estar logeado para comentar');
+            return;
+        }
+
+        if (!nuevoComentario.trim()) {
+            toast.error('El comentario no puede estar vacío');
+            return;
+        }
+
+        try {
+            const response = await fetch(`${API}/publicaciones/${post.id}/comentarios`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    contenido: nuevoComentario
+                })
+            });
+
+            if (response.ok) {
+                const nuevoComentarioData = await response.json();
+                setComentarios([...comentarios, nuevoComentarioData]);
+                setNuevoComentario('');
+                toast.success('Comentario publicado');
+            } else {
+                toast.error('Error al publicar comentario');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            toast.error('Error al publicar comentario');
+        }
+    };
 
     const timeAgo = (dateStr) => {
         if (!dateStr) return '';
@@ -150,18 +208,11 @@ const Post = ({ post = {} }) => {
 
             {/*Botones de Interacción*/}
             <div className="card-body p-3 pb-0 text-dark">
-                <div className="d-flex justify-content-between mb-3">
-                    <div className="d-flex gap-3">
-                        <i className="bi bi-heart fs-5 text-success hover-effect" style={{ cursor: 'pointer' }}></i>
-                        <i className="bi bi-chat fs-5 hover-effect" style={{ cursor: 'pointer' }}></i>
-                        <i className="bi bi-send fs-5 hover-effect" style={{ cursor: 'pointer' }}></i>
-                    </div>
-                    <div>
-                        <i className="bi bi-bookmark fs-5 hover-effect" style={{ cursor: 'pointer' }}></i>
+                <div className="d-flex justify-content-start mb-3">
+                    <div className="d-flex gap-2">
+                        <i className="bi bi-chat fs-5 hover-effect text-success" style={{ cursor: 'pointer' }} title="Comentarios"></i>
                     </div>
                 </div>
-
-                <p className="fw-bold mb-1" style={{ fontSize: '14px' }}>{post.likes || '0'} Me gusta</p>
 
                 <p className="mb-1" style={{ fontSize: '14px' }}>
                     <span className="fw-bold me-2 cursor-pointer">{authorName}</span>
@@ -177,12 +228,34 @@ const Post = ({ post = {} }) => {
                     </p>
                 )}
 
-                <a href="#!" className="text-muted text-decoration-none d-block mb-1" style={{ fontSize: '14px' }}>
-                    Ver los 320 comentarios
-                </a>
-                <p className="text-muted mb-3" style={{ fontSize: '12px' }}>
+                <p className="text-muted mb-2" style={{ fontSize: '12px' }}>
                     {timeAgo(post.fechaPublicacion)}
                 </p>
+
+                {/* Sección de Comentarios */}
+                <div className="mb-3 border-top pt-2">
+                    <p className="fw-bold mb-2" style={{ fontSize: '14px' }}>
+                        {comentarios.length} comentario{comentarios.length !== 1 ? 's' : ''}
+                    </p>
+                    
+                    {loadingComentarios ? (
+                        <p className="text-muted" style={{ fontSize: '12px' }}>Cargando comentarios...</p>
+                    ) : comentarios.length > 0 ? (
+                        <div style={{ maxHeight: '200px', overflowY: 'auto', marginBottom: '10px' }}>
+                            {comentarios.map((comentario, index) => (
+                                <div key={index} className="mb-2 pb-2 border-bottom" style={{ fontSize: '13px' }}>
+                                    <span className="fw-bold me-1">{comentario.usuarioNombre || 'Usuario'}:</span>
+                                    <span className="text-dark">{comentario.contenido}</span>
+                                    <p className="text-muted" style={{ fontSize: '11px', margin: '2px 0 0 0' }}>
+                                        {timeAgo(comentario.fechaCreacion)}
+                                    </p>
+                                </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <p className="text-muted" style={{ fontSize: '12px' }}>Sin comentarios aún</p>
+                    )}
+                </div>
             </div>
 
             {/*Agregar Comentario*/}
@@ -192,10 +265,21 @@ const Post = ({ post = {} }) => {
                     type="text"
                     className="form-control bg-transparent border-0 text-dark shadow-none px-2"
                     placeholder="Agrega un comentario..."
+                    value={nuevoComentario}
+                    onChange={(e) => setNuevoComentario(e.target.value)}
+                    onKeyPress={(e) => {
+                        if (e.key === 'Enter') {
+                            handlePublicarComentario();
+                        }
+                    }}
                     style={{ fontSize: '14px' }}
                 />
 
-                <button className="btn btn-link text-decoration-none fw-bold p-0 text-success" style={{ fontSize: '14px' }}>
+                <button 
+                    className="btn btn-link text-decoration-none fw-bold p-0 text-success" 
+                    style={{ fontSize: '14px' }}
+                    onClick={handlePublicarComentario}
+                >
                     Publicar
                 </button>
             </div>
@@ -205,7 +289,6 @@ const Post = ({ post = {} }) => {
                 showReportModal={showReportModal}
                 setShowReportModal={setShowReportModal}
                 publicacionId={post.id}
-                API_PUBLICATIONS={API_PUBLICATIONS}
             />
 
         </div>
