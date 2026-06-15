@@ -5,9 +5,18 @@ import { Stories } from '../StoriesBar/Stories'
 
 describe('Stories (simple)', () => {
   test('renders navigation buttons and story images', () => {
+    const samplePosts = [
+      {
+        id: 1,
+        usuario: { nombre: 'User', apellido: 'One' },
+        fotos: ['https://example.com/story1.jpg'],
+        fechaPublicacion: new Date().toISOString()
+      }
+    ]
+
     render(
       <MemoryRouter>
-        <Stories />
+        <Stories posts={samplePosts} />
       </MemoryRouter>
     )
 
