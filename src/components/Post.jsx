@@ -23,6 +23,40 @@ const Post = ({ post = {} }) => {
     const description = post.descripcion || '';
     const tags = post.especie ? `#${post.especie}` : '';
 
+    // Función para decodificar JWT y obtener el nombre y apellido
+    const extraerDatosUsuarioDelToken = (token) => {
+        try {
+            const payloadBase64 = token.split('.')[1];
+            if (!payloadBase64) {
+                console.error('No se pudo extraer payload del token');
+                return null;
+            }
+            const decodedPayload = JSON.parse(atob(payloadBase64));
+            
+            console.log('Token decodificado:', decodedPayload);
+            console.log('Nombre:', decodedPayload.nombre);
+            console.log('Apellido:', decodedPayload.apellido);
+            
+            // Verificar que al menos uno de los dos tenga valor
+            const nombre = decodedPayload.nombre ? decodedPayload.nombre.trim() : '';
+            const apellido = decodedPayload.apellido ? decodedPayload.apellido.trim() : '';
+            
+            if (nombre || apellido) {
+                return {
+                    nombre: nombre,
+                    apellido: apellido,
+                    id: decodedPayload.id
+                };
+            }
+            
+            console.warn('Token no contiene nombre ni apellido');
+            return null;
+        } catch (error) {
+            console.error('Error decodificando token:', error);
+            return null;
+        }
+    };
+
     useEffect(() => {
         cargarComentarios();
     }, [post.id]);
@@ -55,6 +89,19 @@ const Post = ({ post = {} }) => {
             return;
         }
 
+        // Extraer datos del usuario del token
+        const datosUsuario = extraerDatosUsuarioDelToken(token);
+        let nombreCompleto = 'Usuario';
+        
+        if (datosUsuario && (datosUsuario.nombre || datosUsuario.apellido)) {
+            nombreCompleto = `${datosUsuario.nombre} ${datosUsuario.apellido}`.trim();
+            if (!nombreCompleto) {
+                nombreCompleto = 'Usuario';
+            }
+        }
+        
+        console.log('Nombre completo a enviar:', nombreCompleto);
+
         try {
             const response = await fetch(`${API}/publicaciones/${post.id}/comentarios`, {
                 method: 'POST',
@@ -63,7 +110,8 @@ const Post = ({ post = {} }) => {
                     Authorization: `Bearer ${token}`
                 },
                 body: JSON.stringify({
-                    contenido: nuevoComentario
+                    contenido: nuevoComentario,
+                    usuarioNombre: nombreCompleto
                 })
             });
 
