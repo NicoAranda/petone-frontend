@@ -13,7 +13,6 @@ describe('Stories (simple)', () => {
 
     expect(screen.getByRole('button', { name: /chevron-left/i })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /chevron-right/i })).toBeInTheDocument()
-    // At least one story image should be present
     const imgs = screen.getAllByRole('img')
     expect(imgs.length).toBeGreaterThan(0)
   })
