@@ -64,6 +64,11 @@ const Post = ({ post = {} }) => {
     const cargarComentarios = async () => {
         try {
             setLoadingComentarios(true);
+            // Avoid fetching when post.id is not provided in tests or placeholders
+            if (!post || !post.id) {
+                setComentarios([])
+                return
+            }
             const response = await fetch(`${API}/publicaciones/${post.id}/comentarios`);
             if (response.ok) {
                 const data = await response.json();
@@ -75,6 +80,9 @@ const Post = ({ post = {} }) => {
             setLoadingComentarios(false);
         }
     };
+
+    // Likes display helper
+    const likesCount = post.likes || 0;
 
     const handlePublicarComentario = async () => {
         const token = localStorage.getItem('token');
@@ -278,6 +286,10 @@ const Post = ({ post = {} }) => {
 
                 <p className="text-muted mb-2" style={{ fontSize: '12px' }}>
                     {timeAgo(post.fechaPublicacion)}
+                </p>
+
+                <p className="mb-2 fw-bold" style={{ fontSize: '14px' }}>
+                    {likesCount} {likesCount === 1 ? 'Me gusta' : 'Me gusta'}
                 </p>
 
                 {/* Sección de Comentarios */}
