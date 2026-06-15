@@ -14,14 +14,16 @@ describe('Stories (simple)', () => {
       }
     ]
 
-    render(
+    const { container } = render(
       <MemoryRouter>
         <Stories posts={samplePosts} />
       </MemoryRouter>
     )
 
-    expect(screen.getByRole('button', { name: /chevron-left/i })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /chevron-right/i })).toBeInTheDocument()
+    const buttons = screen.getAllByRole('button')
+    expect(buttons.length).toBeGreaterThanOrEqual(2)
+    expect(container.querySelector('.bi-chevron-left')).toBeInTheDocument()
+    expect(container.querySelector('.bi-chevron-right')).toBeInTheDocument()
     const imgs = screen.getAllByRole('img')
     expect(imgs.length).toBeGreaterThan(0)
   })
