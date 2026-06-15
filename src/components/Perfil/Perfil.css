@@ -43,3 +43,11 @@
   object-fit: cover;
   display: block;
 }
+
+.pet-card-image {
+  width: 100%;
+  height: 220px;
+  object-fit: cover;
+  border-top-left-radius: 14px;
+  border-top-right-radius: 14px;
+}

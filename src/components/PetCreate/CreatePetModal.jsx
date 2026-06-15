@@ -1,91 +1,42 @@
 import React, { useState, useEffect, useRef } from 'react';
 import toast from 'react-hot-toast';
-import './CreatePostModal.css';
+import '../PostCreate/CreatePostModal.css';
 import { API } from '../../lib/api'
 
-const CreatePostModal = ({ isOpen, onClose, onCreated, initialPetData }) => {
+const CreatePetModal = ({ isOpen, onClose, onCreated }) => {
   const [photos, setPhotos] = useState([]);
-
   const [nombre, setNombre] = useState("");
-  const [especie, setEspecie] = useState("Perro");
-  const [sexo, setSexo] = useState("Macho");
-  const [estado, setEstado] = useState("Perdido");
+  const [raza, setRaza] = useState("");
+  const [color, setColor] = useState("");
+  const [tamano, setTamano] = useState("Medio");
+  const [estado, setEstado] = useState("Activo");
   const [descripcion, setDescripcion] = useState("");
-
-  const [loading, setLoading] = useState(false)
-
-  const [addressQuery, setAddressQuery] = useState("");
-  const [suggestions, setSuggestions] = useState([]);
-  const [showSuggestions, setShowSuggestions] = useState(false);
-
-  const MAPBOX_TOKEN = "pk.eyJ1IjoidHZiYWwyMjExIiwiYSI6ImNtb3cxbjg2NzAyb2YycnEzM2pwMXB5MXEifQ.qmFEvntjChjIxEfdfOfMww";
+  const [loading, setLoading] = useState(false);
 
   const galleryRef = useRef(null);
 
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
-      
-      // Si hay datos iniciales de una mascota, pre-llenar los campos
-      if (initialPetData) {
-        setNombre(initialPetData.nombre || "");
-        setDescripcion(initialPetData.descripcion || `Mascota perdida: ${initialPetData.nombre}`);
-        setEstado("Perdido");
-        setSexo("No sé");
-        setEspecie("Perro"); // Podría mejorarse detectando la especie
-      }
     } else {
       document.body.style.overflow = 'auto';
-
       setPhotos([]);
-
       setNombre("");
-      setAddressQuery("");
-      setEspecie("Perro");
-      setSexo("Macho");
-      setEstado("Perdido");
+      setRaza("");
+      setColor("");
+      setTamano("Medio");
+      setEstado("Activo");
       setDescripcion("");
-
-      setAddressQuery("");
-      setSuggestions([]);
     }
     return () => {
       document.body.style.overflow = 'auto';
     };
-  }, [isOpen, initialPetData]);
-
-  useEffect(() => {
-    const delayDebounceFn = setTimeout(() => {
-      if (addressQuery.length > 3 && MAPBOX_TOKEN !== "pk.AQUI_VA_TU_TOKEN_DE_MAPBOX") {
-
-        const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(addressQuery)}.json?access_token=${MAPBOX_TOKEN}&country=cl&limit=5&language=es`;
-
-        fetch(url)
-          .then(res => res.json())
-          .then(data => {
-            setSuggestions(data.features || []);
-            setShowSuggestions(true);
-          })
-          .catch(err => console.error("Error buscando dirección en Mapbox:", err));
-      } else {
-        setSuggestions([]);
-        setShowSuggestions(false);
-      }
-    }, 500);
-
-    return () => clearTimeout(delayDebounceFn);
-  }, [addressQuery]);
-
-  const handleSelectAddress = (place) => {
-    setAddressQuery(place.place_name);
-    setShowSuggestions(false);
-    console.log("Dirección Mapbox seleccionada:", place);
-  };
+  }, [isOpen]);
 
   const handlePhotoChange = (e) => {
     const files = Array.from(e.target.files);
-    if (photos.length + files.length > 10) {
-      alert("Puedes subir un máximo de 10 imágenes.");
+    if (photos.length + files.length > 5) {
+      toast.error("Puedes subir un máximo de 5 imágenes.");
       return;
     }
     const newPhotosUrls = files.map(file => ({
@@ -113,27 +64,46 @@ const CreatePostModal = ({ isOpen, onClose, onCreated, initialPetData }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true)
+    
+    if (!nombre.trim()) {
+      toast.error("El nombre de la mascota es requerido");
+      return;
+    }
+
+    setLoading(true);
     const formData = new FormData();
 
+    // Extraer userId del token
+    const token = localStorage.getItem('token');
+    let userId = null;
+    if (token) {
+      try {
+        const payloadBase64 = token.split('.')[1];
+        const decodedPayload = JSON.parse(atob(payloadBase64));
+        userId = decodedPayload.id;
+      } catch (err) {
+        console.error('Error decoding token:', err);
+      }
+    }
+
     formData.append("nombre", nombre);
-    formData.append("ubicacion", addressQuery);
-    formData.append("especie", especie);
-    formData.append("sexo", sexo);
+    formData.append("raza", raza || "No especificada");
+    formData.append("color", color || "No especificado");
+    formData.append("tamano", tamano);
     formData.append("estado", estado);
     formData.append("descripcion", descripcion);
+    if (userId) {
+      formData.append("usuarioId", userId);
+    }
 
     photos.forEach(photoObj => {
       formData.append("fotos", photoObj.file);
     });
 
     try {
-      const API_ULR = `${API}/publicaciones/con-imagenes`
+      const headers = token ? { Authorization: `Bearer ${token}` } : {};
 
-      const token = localStorage.getItem('token')
-      const headers = token ? { Authorization: `Bearer ${token}` } : {}
-
-      const response = await fetch(API_ULR, {
+      const response = await fetch(`${API}/mascotas`, {
         method: "POST",
         body: formData,
         headers,
@@ -141,16 +111,16 @@ const CreatePostModal = ({ isOpen, onClose, onCreated, initialPetData }) => {
 
       if (response.ok) {
         const data = await response.json();
-        toast.success("¡Publicación creada con éxito!");
+        toast.success("¡Mascota creada con éxito!");
+        onClose();
+        // Refetch después de cerrar el modal
         if (onCreated) {
+          await new Promise(resolve => setTimeout(resolve, 500)); // Pequeño delay
           await onCreated(data);
         }
-        toast.success("¡Publicación creada con éxito!");
-        onClose();
       } else {
-        const errText = await response.text().catch(() => null)
-        console.error('Upload failed', response.status, errText)
-        toast.error("Hubo un problema al publicar la mascota.");
+        console.error('Error creating pet:', response.status);
+        toast.error("Hubo un problema al crear la mascota.");
       }
     } catch (error) {
       console.error("Error de conexión: ", error);
@@ -167,15 +137,15 @@ const CreatePostModal = ({ isOpen, onClose, onCreated, initialPetData }) => {
       <div className="modal-container" onClick={(e) => e.stopPropagation()}>
 
         <div className="modal-header border-bottom pb-3 mb-3 d-flex justify-content-between align-items-center">
-          <h5 className="m-0 fw-bold">Crear nueva publicación</h5>
+          <h5 className="m-0 fw-bold">Registrar nueva mascota</h5>
           <button className="btn-close" onClick={onClose}></button>
         </div>
 
         <form onSubmit={handleSubmit}>
           <div className="mb-3">
             <label className="form-label fw-semibold text-success d-flex justify-content-between">
-              <span>Fotos de la mascota</span>
-              <span className="text-muted small">{photos.length} / 10</span>
+              <span>Fotos de la mascota <span className="text-muted small">(opcional)</span></span>
+              <span className="text-muted small">{photos.length} / 5</span>
             </label>
 
             <div className="carousel-wrapper">
@@ -199,7 +169,7 @@ const CreatePostModal = ({ isOpen, onClose, onCreated, initialPetData }) => {
                   </div>
                 ))}
 
-                {photos.length < 10 && (
+                {photos.length < 5 && (
                   <div className="photo-upload-box small-box">
                     <i className="bi bi-camera fs-3 text-muted"></i>
                     <input
@@ -221,81 +191,63 @@ const CreatePostModal = ({ isOpen, onClose, onCreated, initialPetData }) => {
             </div>
           </div>
 
+          <div className="mb-3">
+            <label className="form-label fw-semibold">Nombre *</label>
+            <input
+              type="text"
+              className="form-control"
+              placeholder="Ej: Firulais"
+              value={nombre}
+              onChange={(e) => setNombre(e.target.value)}
+              required
+            />
+          </div>
+
           <div className="row mb-3">
             <div className="col-6">
-              <label className="form-label fw-semibold">Nombre (Opcional)</label>
+              <label className="form-label fw-semibold">Raza</label>
               <input
                 type="text"
                 className="form-control"
-                placeholder="Ej: Firulais"
-                value={nombre}
-                onChange={(e) => setNombre(e.target.value)}
+                placeholder="Ej: Golden Retriever"
+                value={raza}
+                onChange={(e) => setRaza(e.target.value)}
               />
             </div>
-
-            <div className="col-6 position-relative">
-              <label className="form-label fw-semibold">Ubicación</label>
+            <div className="col-6">
+              <label className="form-label fw-semibold">Color</label>
               <input
                 type="text"
                 className="form-control"
-                placeholder="Ej: Costanera Center, Providencia"
-                value={addressQuery}
-                onChange={(e) => setAddressQuery(e.target.value)}
-                required
+                placeholder="Ej: Marrón"
+                value={color}
+                onChange={(e) => setColor(e.target.value)}
               />
-
-              {showSuggestions && suggestions.length > 0 && (
-                <ul className="list-group position-absolute w-100 mt-1 shadow-sm" style={{ zIndex: 1060, maxHeight: '200px', overflowY: 'auto' }}>
-                  {suggestions.map((place, index) => (
-                    <li
-                      key={index}
-                      className="list-group-item list-group-item-action"
-                      onClick={() => handleSelectAddress(place)}
-                      style={{ fontSize: '0.85rem', cursor: 'pointer' }}
-                    >
-                      <i className="bi bi-geo-alt-fill text-success me-2"></i>
-                      {place.place_name}
-                    </li>
-                  ))}
-                </ul>
-              )}
             </div>
           </div>
 
           <div className="row mb-3">
-            <div className="col-4">
-              <label className="form-label fw-semibold">Especie</label>
+            <div className="col-6">
+              <label className="form-label fw-semibold">Tamaño</label>
               <select
                 className="form-select"
-                value={especie}
-                onChange={(e) => setEspecie(e.target.value)}
+                value={tamano}
+                onChange={(e) => setTamano(e.target.value)}
               >
-                <option>Perro</option>
-                <option>Gato</option>
-                <option>Otro</option>
+                <option>Pequeño</option>
+                <option>Medio</option>
+                <option>Grande</option>
               </select>
             </div>
-            <div className="col-4">
-              <label className="form-label fw-semibold">Sexo</label>
-              <select
-                className="form-select"
-                value={sexo}
-                onChange={(e) => setSexo(e.target.value)}
-              >
-                <option>Macho</option>
-                <option>Hembra</option>
-                <option>No sé</option>
-              </select>
-            </div>
-            <div className="col-4">
+            <div className="col-6">
               <label className="form-label fw-semibold">Estado</label>
               <select
-                className="form-select border-success text-success fw-bold"
+                className="form-select"
                 value={estado}
                 onChange={(e) => setEstado(e.target.value)}
               >
-                <option>Perdido</option>
-                <option>Encontrado</option>
+                <option>Activo</option>
+                <option>Reportado</option>
               </select>
             </div>
           </div>
@@ -305,11 +257,10 @@ const CreatePostModal = ({ isOpen, onClose, onCreated, initialPetData }) => {
             <textarea
               className="form-control"
               rows="3"
-              placeholder="Señas particulares, collar, color, etc..."
+              placeholder="Características especiales, collar, manchas, etc..."
               value={descripcion}
               onChange={(e) => setDescripcion(e.target.value)}
-            >
-            </textarea>
+            />
           </div>
 
           <button
@@ -320,17 +271,16 @@ const CreatePostModal = ({ isOpen, onClose, onCreated, initialPetData }) => {
             {loading ? (
               <>
                 <span className='spinner-border spinner-border-sm me-2' aria-hidden="true"></span>
-                <span role='status'>Publicando...</span>
+                <span role='status'>Creando...</span>
               </>
             ) : (
-              "Publicar Mascota"
+              "Crear Mascota"
             )}
           </button>
         </form>
-
       </div>
     </div>
   );
 };
 
-export default CreatePostModal;
+export default CreatePetModal;
