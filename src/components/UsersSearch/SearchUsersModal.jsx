@@ -22,15 +22,15 @@ export const SearchUsersModal = ({ isOpen, onClose }) => {
       <div className="modal-container" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '720px' }}>
         <div className="modal-header border-bottom pb-3 mb-3 d-flex justify-content-between align-items-center">
           <div>
-            <h5 className="m-0 fw-bold">Buscar usuarios</h5>
+            <h5 className="m-0 fw-bold">Buscar</h5>
             <p className="text-muted mb-0" style={{ fontSize: '0.9rem' }}>
-              Escribe al menos 2 caracteres para encontrar usuarios.
+              Escribe al menos 2 caracteres para encontrar por nombre de usuario, especie, raza, comuna o estado.
             </p>
           </div>
           <button className="btn-close" onClick={onClose}></button>
         </div>
 
-        <SearchUsers maxWidth={700} />
+        <SearchUsers maxWidth={700} onClose={onClose} />
       </div>
     </div>
   )
