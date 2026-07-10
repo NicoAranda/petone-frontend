@@ -81,9 +81,6 @@ const Post = ({ post = {} }) => {
         }
     };
 
-    // Likes display helper
-    const likesCount = post.likes || 0;
-
     const handlePublicarComentario = async () => {
         const token = localStorage.getItem('token');
         
@@ -286,10 +283,6 @@ const Post = ({ post = {} }) => {
 
                 <p className="text-muted mb-2" style={{ fontSize: '12px' }}>
                     {timeAgo(post.fechaPublicacion)}
-                </p>
-
-                <p className="mb-2 fw-bold" style={{ fontSize: '14px' }}>
-                    {likesCount} {likesCount === 1 ? 'Me gusta' : 'Me gusta'}
                 </p>
 
                 {/* Sección de Comentarios */}
