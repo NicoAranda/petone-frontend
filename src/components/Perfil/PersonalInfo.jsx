@@ -1,6 +1,37 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 export const PersonalInfo = ({ userData }) => {
+
+  const [formData, setFormData] = useState({
+    nombreOrganizacion: '',
+    tipoOrganizacion: '',
+    correoInstitucional: '',
+    telefono: '',
+    direccion: '',
+    sitioWeb: '',
+    descripcion: '',
+    motivo: '',
+    acepta: false
+  });
+
+  const handleChange = (e) => {
+    const { name, value, checked, type } = e.target;
+
+    setFormData(prev => ({
+      ...prev,
+      [name]: type === "checkbox" ? checked : value
+    }));
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+
+    console.log(formData);
+
+    // Aquí irá el axios hacia el BFF
+  };
+
+
   return (
     <>
       {/* Encabezado del Perfil */}
@@ -80,9 +111,215 @@ export const PersonalInfo = ({ userData }) => {
 
           <div className="col-12 col-md-6 mt-5">
             <div className="d-flex flex-column py-2">
-              <button className="text-center fw-semibold fs-5 profile-nav-link active p-2 border-0">
-                Solicitud de Organización
+              <button
+                className="text-center fw-semibold fs-5 profile-nav-link active p-2 border-0"
+                data-bs-toggle="modal"
+                data-bs-target="#modalOrganizacion"
+              >
+                Solicitar ser Organización
               </button>
+            </div>
+          </div>
+
+          <div
+            className="modal fade"
+            id="modalOrganizacion"
+            tabIndex="-1"
+          >
+            <div className="modal-dialog modal-lg">
+              <div className="modal-content">
+
+                <div className="modal-header">
+                  <h5 className="modal-title">
+                    Solicitud de Organización
+                  </h5>
+
+                  <button
+                    className="btn-close"
+                    data-bs-dismiss="modal"
+                  ></button>
+
+                </div>
+
+                <form onSubmit={handleSubmit}>
+
+                  <div className="modal-body">
+
+                    <div className="mb-3">
+                      <label className="form-label">
+                        Nombre de la Organización
+                      </label>
+
+                      <input
+                        className="form-control"
+                        name="nombreOrganizacion"
+                        value={formData.nombreOrganizacion}
+                        onChange={handleChange}
+                        required
+                      />
+                    </div>
+
+                    <div className="mb-3">
+                      <label className="form-label">
+                        Tipo de Organización
+                      </label>
+
+                      <select
+                        className="form-select"
+                        name="tipoOrganizacion"
+                        value={formData.tipoOrganizacion}
+                        onChange={handleChange}
+                        required
+                      >
+                        <option value="">Seleccione...</option>
+                        <option>Clínica Veterinaria</option>
+                        <option>Refugio</option>
+                        <option>Municipalidad</option>
+                        <option>Fundación</option>
+                        <option>Otro</option>
+                      </select>
+                    </div>
+
+                    <div className="row">
+
+                      <div className="col-md-6 mb-3">
+
+                        <label className="form-label">
+                          Correo Institucional
+                        </label>
+
+                        <input
+                          type="email"
+                          className="form-control"
+                          name="correoInstitucional"
+                          value={formData.correoInstitucional}
+                          onChange={handleChange}
+                        />
+
+                      </div>
+
+                      <div className="col-md-6 mb-3">
+
+                        <label className="form-label">
+                          Teléfono
+                        </label>
+
+                        <input
+                          className="form-control"
+                          name="telefono"
+                          value={formData.telefono}
+                          onChange={handleChange}
+                        />
+
+                      </div>
+
+                    </div>
+
+                    <div className="mb-3">
+
+                      <label className="form-label">
+                        Dirección
+                      </label>
+
+                      <input
+                        className="form-control"
+                        name="direccion"
+                        value={formData.direccion}
+                        onChange={handleChange}
+                      />
+
+                    </div>
+
+                    <div className="mb-3">
+
+                      <label className="form-label">
+                        Sitio Web (opcional)
+                      </label>
+
+                      <input
+                        className="form-control"
+                        name="sitioWeb"
+                        value={formData.sitioWeb}
+                        onChange={handleChange}
+                      />
+
+                    </div>
+
+                    <div className="mb-3">
+
+                      <label className="form-label">
+                        Descripción
+                      </label>
+
+                      <textarea
+                        className="form-control"
+                        rows="3"
+                        name="descripcion"
+                        value={formData.descripcion}
+                        onChange={handleChange}
+                      />
+
+                    </div>
+
+                    <div className="mb-3">
+
+                      <label className="form-label">
+                        Motivo de la solicitud
+                      </label>
+
+                      <textarea
+                        className="form-control"
+                        rows="3"
+                        name="motivo"
+                        value={formData.motivo}
+                        onChange={handleChange}
+                      />
+
+                    </div>
+
+                    <div className="form-check">
+
+                      <input
+                        className="form-check-input"
+                        type="checkbox"
+                        name="acepta"
+                        checked={formData.acepta}
+                        onChange={handleChange}
+                        required
+                      />
+
+                      <label className="form-check-label">
+
+                        Declaro que la información proporcionada es verdadera y autorizo su revisión por un administrador.
+
+                      </label>
+
+                    </div>
+
+                  </div>
+
+                  <div className="modal-footer">
+
+                    <button
+                      className="btn btn-secondary"
+                      data-bs-dismiss="modal"
+                      type="button"
+                    >
+                      Cancelar
+                    </button>
+
+                    <button
+                      className="btn btn-success"
+                      type="submit"
+                    >
+                      Enviar Solicitud
+                    </button>
+
+                  </div>
+
+                </form>
+
+              </div>
             </div>
           </div>
 

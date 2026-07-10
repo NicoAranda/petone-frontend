@@ -7,6 +7,7 @@ import UsersTable from '../components/UsersTable';
 import PublicationsTable from '../components/PublicationsTable';
 import ReportsTable from '../components/ReportsTable';
 import { API } from '../lib/api'
+import {RequestTable} from '../components/RequestTable';
 
 const AdminDashboard = () => {
     const [publicaciones, setPublicaciones] = useState([]);
@@ -112,11 +113,15 @@ const AdminDashboard = () => {
                 </div>
 
                 {/* Tabla de Reportes (Componente) */}
-                <div className="col-12">
+                <div className="col-12 mt-4">
                     <ReportsTable
                         fetchReports={() => {}}
                         API_REPORTS={API_REPORTS}
                     />
+                </div>
+                
+                <div className="col-12 mt-4">
+                    <RequestTable/>
                 </div>
 
                 {/* Resumen / Estadísticas */}
