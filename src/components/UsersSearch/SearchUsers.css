@@ -49,6 +49,15 @@
   color: #6c757d;
 }
 
+.search-result-type {
+  font-size: 0.75rem;
+  color: #198754;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-top: 0.2rem;
+}
+
 .search-empty {
   margin-top: 1rem;
   color: #6c757d;

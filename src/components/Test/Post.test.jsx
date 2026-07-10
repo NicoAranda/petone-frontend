@@ -21,6 +21,7 @@ describe('Post (simple)', () => {
         <Post post={sample} />
       </MemoryRouter>
     )
+    render(<Post post={sample} />)
 
     const rexMatches = screen.getAllByText(/Rex/i)
     expect(rexMatches.length).toBeGreaterThanOrEqual(1)
