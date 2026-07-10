@@ -69,6 +69,23 @@ export const PersonalInfo = ({ userData }) => {
             </div>
           </div>
 
+          <div className="col-12 col-md-6">
+            <div className="d-flex flex-column border-bottom py-2">
+              <span className="text-muted small">Rol</span>
+              <span className="fw-semibold fs-5">
+                {userData?.rol || 'No registrado'}
+              </span>
+            </div>
+          </div>
+
+          <div className="col-12 col-md-6 mt-5">
+            <div className="d-flex flex-column py-2">
+              <button className="text-center fw-semibold fs-5 profile-nav-link active p-2 border-0">
+                Solicitud de Organización
+              </button>
+            </div>
+          </div>
+
         </div>
       </div>
     </>
