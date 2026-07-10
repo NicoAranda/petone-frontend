@@ -9,11 +9,10 @@ describe('Post (simple)', () => {
     fotos: ['https://example.com/dog.jpg'],
     ubicacion: 'Santiago',
     especie: 'Perro',
-    likes: 5,
     fechaPublicacion: new Date(Date.now() - 60 * 1000).toISOString(),
   }
 
-  test('renders title, image and likes', () => {
+  test('renders title and image without likes', () => {
     render(<Post post={sample} />)
 
     const rexMatches = screen.getAllByText(/Rex/i)
@@ -21,7 +20,7 @@ describe('Post (simple)', () => {
     const img = screen.getByAltText(/Publicación de mascota/i)
     expect(img).toBeInTheDocument()
     expect(img).toHaveAttribute('src', sample.fotos[0])
-    expect(screen.getByText(/5\s*Me gusta/i)).toBeInTheDocument()
+    expect(screen.queryByText(/Me gusta/i)).not.toBeInTheDocument()
     const especieMatches = screen.getAllByText(/Perro/i)
     expect(especieMatches.length).toBeGreaterThanOrEqual(1)
   })
