@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import ReportModal from './ReportModal';
 import toast from 'react-hot-toast';
 import { API } from '../lib/api';
 
 const Post = ({ post = {} }) => {
+    const navigate = useNavigate();
 
     const [activeIndex, setActiveIndex] = useState(0);
     const [showReportModal, setShowReportModal] = useState(false);
@@ -17,6 +19,7 @@ const Post = ({ post = {} }) => {
     const authorName = post.usuario
         ? `${post.usuario.nombre} ${post.usuario.apellido}`
         : 'Usuario';
+    const authorId = post.usuario?.id ?? post.userId ?? post.usuarioId ?? null;
 
     const petName = post.nombre || 'Mascota sin nombre';
 
@@ -154,6 +157,12 @@ const Post = ({ post = {} }) => {
         setActiveIndex((prevIndex) => (prevIndex === 0 ? fotos.length - 1 : prevIndex - 1));
     };
 
+    const handleAuthorClick = () => {
+        if (authorId) {
+            navigate(`/perfil/${authorId}`);
+        }
+    };
+
     const handleNext = () => {
         setActiveIndex((prevIndex) => (prevIndex === fotos.length - 1 ? 0 : prevIndex + 1));
     };
@@ -163,17 +172,25 @@ const Post = ({ post = {} }) => {
         <div className="card mb-4 mx-auto shadow-sm" style={{ width: '100%', maxWidth: '470px', backgroundColor: 'var(--color-surface)', borderColor: '#cbd9cd', borderRadius: '12px' }}>
 
             {/*Cabecera del Post*/}
-            <div className="card-header bg-transparent border-0 d-flex justify-content-between align-items-center p-3">
-                <div className="d-flex align-items-center gap-2">
+            <div className="card-header bg-transparent border-0 d-flex justify-content-between align-items-center p-3" style={{ gap: '8px' }}>
+                <div className="d-flex align-items-center gap-2" style={{ minWidth: 0 }}>
                     <img
                         src={`https://ui-avatars.com/api/?name=${encodeURIComponent(authorName)}&background=198754&color=fff`}
                         alt="Perfil"
-                        className="rounded-circle"
+                        className="rounded-circle flex-shrink-0"
                         style={{ width: '32px', height: '32px', objectFit: 'cover' }}
                     />
-                    <div className="d-flex flex-column lh-1">
-                        <span className="fw-bold text-dark" style={{ fontSize: '14px' }}>{authorName}</span>
-                        <span className="text-muted" style={{ fontSize: '12px' }}>{location}</span>
+                    <div className="d-flex flex-column lh-1 align-items-start" style={{ lineHeight: 1.1 }}>
+                        <button
+                            type="button"
+                            className="btn btn-link p-0 fw-bold text-dark text-decoration-none"
+                            style={{ fontSize: '14px', lineHeight: 1.1 }}
+                            onClick={handleAuthorClick}
+                            disabled={!authorId}
+                        >
+                            {authorName}
+                        </button>
+                        <span className="text-muted" style={{ fontSize: '12px', lineHeight: 1.1 }}>{location}</span>
                     </div>
                 </div>
                 <div className="dropdown">
