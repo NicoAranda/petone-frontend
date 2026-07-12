@@ -163,8 +163,8 @@ const CreatePostModal = ({ isOpen, onClose, onCreated, initialPetData }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-container" onClick={(e) => e.stopPropagation()}>
+    <div className="modal-overlay" onClick={onClose} tabIndex="-1">
+      <div className="modal-container" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true" tabIndex="-1">
 
         <div className="modal-header border-bottom pb-3 mb-3 d-flex justify-content-between align-items-center">
           <h5 className="m-0 fw-bold">Crear nueva publicación</h5>
