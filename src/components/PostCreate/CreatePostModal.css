@@ -1,15 +1,37 @@
-
 .modal-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
+  inset: 0;
   width: 100vw;
-  height: 100vh;
+  height: 100dvh;
   background-color: rgba(0, 0, 0, 0.6);
-  z-index: 1050; /* Por encima de todo */
+  z-index: 1060;
+
   display: flex;
   justify-content: center;
   align-items: center;
+
+  padding: 16px;
+  overflow-y: auto;
+  pointer-events: auto;
+}
+
+.modal-container {
+  position: relative;
+  z-index: 1061;
+
+  background-color: var(--color-surface);
+  border-radius: 16px;
+
+  width: 100%;
+  max-width: 500px;
+  max-height: calc(100dvh - 32px);
+
+  padding: 24px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+  pointer-events: auto;
 }
 
 
@@ -21,7 +43,7 @@
   max-height: 90vh;
   padding: 24px;
   overflow-y: auto;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
 }
 
 
@@ -57,16 +79,16 @@
   position: relative;
   display: flex;
   align-items: center;
-  padding: 0 35px; 
+  padding: 0 35px;
   margin: 0 -10px;
 }
 
 
 .photo-gallery-container {
   display: flex;
-  flex-wrap: nowrap; 
+  flex-wrap: nowrap;
   gap: 10px;
-  overflow-x: auto; 
+  overflow-x: auto;
   scroll-behavior: smooth;
   width: 100%;
   padding-bottom: 5px;
@@ -76,6 +98,7 @@
 .photo-gallery-container::-webkit-scrollbar {
   display: none;
 }
+
 .photo-gallery-container {
   scrollbar-width: none;
 }
@@ -96,7 +119,7 @@
   align-items: center;
   cursor: pointer;
   z-index: 2;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.12);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.12);
   transition: 0.2s;
 }
 
@@ -125,7 +148,7 @@
 
 .photo-preview-wrapper {
   overflow: hidden;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .preview-img-small {
@@ -153,4 +176,48 @@
 
 .btn-remove-photo:hover {
   background-color: #dc3545;
+}
+
+.modal-overlay,
+.modal-container,
+.modal-container input,
+.modal-container textarea,
+.modal-container select,
+.modal-container button {
+  pointer-events: auto;
+}
+
+.modal-container input,
+.modal-container textarea,
+.modal-container select {
+  position: relative;
+  z-index: 1;
+  touch-action: manipulation;
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+.modal-container input:focus,
+.modal-container textarea:focus,
+.modal-container select:focus {
+  z-index: 2;
+}
+
+@media (max-width: 575.98px) {
+  .modal-overlay {
+    padding: 8px;
+    align-items: flex-start;
+  }
+
+  .modal-container {
+    max-width: 100%;
+    max-height: calc(100dvh - 16px);
+    margin-top: 8px;
+    padding: 16px;
+    border-radius: 12px;
+  }
+
+  .modal-container .row>[class*='col-'] {
+    width: 100%;
+  }
 }

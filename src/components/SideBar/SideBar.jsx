@@ -26,8 +26,7 @@ export const SideBar = ({
   const navigate = useNavigate();
   const location = useLocation();
 
-  const isAdmin =
-    user?.rol?.toUpperCase() === 'ADMIN';
+  const isAdmin = user?.rol?.toUpperCase() === 'ADMIN';
 
   const menuItems = [
     {
@@ -47,12 +46,12 @@ export const SideBar = ({
     },
     ...(isAuthenticated && isAdmin
       ? [
-        {
-          icon: 'bi-shield-lock-fill',
-          label: 'Administración',
-          path: '/admin'
-        }
-      ]
+          {
+            icon: 'bi-shield-lock-fill',
+            label: 'Administración',
+            path: '/admin'
+          }
+        ]
       : []),
     {
       icon: 'bi-chat-fill',
@@ -65,6 +64,42 @@ export const SideBar = ({
       action: onOpenSearch
     }
   ];
+
+  const cleanupOffcanvas = (offcanvasElement) => {
+    document
+      .querySelectorAll('.offcanvas-backdrop')
+      .forEach((backdrop) => backdrop.remove());
+
+    document.body.classList.remove('offcanvas-open');
+    document.body.style.removeProperty('overflow');
+    document.body.style.removeProperty('padding-right');
+
+    if (offcanvasElement) {
+      offcanvasElement.classList.remove('show');
+      offcanvasElement.removeAttribute('aria-modal');
+      offcanvasElement.removeAttribute('role');
+      offcanvasElement.setAttribute('aria-hidden', 'true');
+    }
+  };
+
+  const closeMobileMenuImmediately = () => {
+    const offcanvasElement =
+      document.getElementById('mobileSidebar');
+
+    if (!offcanvasElement) {
+      return;
+    }
+
+    const closeButton = offcanvasElement.querySelector(
+      '[data-bs-dismiss="offcanvas"]'
+    );
+
+    closeButton?.click();
+
+    window.setTimeout(() => {
+      cleanupOffcanvas(offcanvasElement);
+    }, 400);
+  };
 
   useEffect(() => {
     const mediaQuery = window.matchMedia(
@@ -84,7 +119,7 @@ export const SideBar = ({
       updateSidebarWidth(event.matches);
 
       if (event.matches) {
-        closeMobileMenu();
+        closeMobileMenuImmediately();
       }
     };
 
@@ -101,6 +136,9 @@ export const SideBar = ({
         'change',
         handleScreenChange
       );
+
+      document.body.style.removeProperty('overflow');
+      document.body.style.removeProperty('padding-right');
     };
   }, []);
 
@@ -135,43 +173,98 @@ export const SideBar = ({
     navigate('/login');
   };
 
-  const closeMobileMenu = () => {
-    const offcanvasElement = document.getElementById("mobileSidebar");
+  const executeAfterMobileMenuCloses = (callback) => {
+    const offcanvasElement =
+      document.getElementById('mobileSidebar');
 
-    if (!offcanvasElement || !window.bootstrap) return;
+    if (!offcanvasElement) {
+      callback();
+      return;
+    }
 
-    const offcanvas =
-      window.bootstrap.Offcanvas.getInstance(offcanvasElement) ||
-      window.bootstrap.Offcanvas.getOrCreateInstance(offcanvasElement);
+    const isOpen =
+      offcanvasElement.classList.contains('show') ||
+      offcanvasElement.classList.contains('showing');
 
-    offcanvas.hide();
+    if (!isOpen) {
+      cleanupOffcanvas(offcanvasElement);
+      callback();
+      return;
+    }
+
+    let callbackExecuted = false;
+
+    const executeCallback = () => {
+      if (callbackExecuted) {
+        return;
+      }
+
+      callbackExecuted = true;
+
+      cleanupOffcanvas(offcanvasElement);
+
+      /*
+       * Espera brevemente para asegurar que Bootstrap libere
+       * completamente el focus trap antes de abrir otro modal.
+       */
+      window.setTimeout(() => {
+        callback();
+      }, 80);
+    };
+
+    offcanvasElement.addEventListener(
+      'hidden.bs.offcanvas',
+      executeCallback,
+      { once: true }
+    );
+
+    /*
+     * Intentamos cerrar mediante la API global de Bootstrap.
+     * Si no está disponible, usamos el botón con data-bs-dismiss.
+     */
+    if (window.bootstrap?.Offcanvas) {
+      const offcanvasInstance =
+        window.bootstrap.Offcanvas.getInstance(
+          offcanvasElement
+        ) ||
+        window.bootstrap.Offcanvas.getOrCreateInstance(
+          offcanvasElement
+        );
+
+      offcanvasInstance.hide();
+    } else {
+      const closeButton = offcanvasElement.querySelector(
+        '[data-bs-dismiss="offcanvas"]'
+      );
+
+      closeButton?.click();
+    }
+
+    /*
+     * Respaldo si Bootstrap no dispara hidden.bs.offcanvas.
+     */
+    window.setTimeout(executeCallback, 550);
   };
 
   const handleMobileNavigation = (path) => {
-    closeMobileMenu();
-
-    window.setTimeout(() => {
+    executeAfterMobileMenuCloses(() => {
       navigate(path);
-    }, 200);
+    });
   };
 
   const handleMobileAction = (action) => {
-    closeMobileMenu();
-
-    window.setTimeout(() => {
+    executeAfterMobileMenuCloses(() => {
       if (typeof action === 'function') {
         action();
       }
-    }, 250);
+    });
   };
 
   const handleMobileLogout = () => {
-    closeMobileMenu();
-
-    window.setTimeout(() => {
+    executeAfterMobileMenuCloses(() => {
       logout();
       navigate('/login');
-    }, 200);
+    });
   };
 
   const isMobileRouteActive = (path) => {
@@ -182,33 +275,16 @@ export const SideBar = ({
     return location.pathname === path;
   };
 
-  const renderDesktopMenuItem = (
-    item,
-    index
-  ) => {
+  const renderDesktopMenuItem = (item, index) => {
     if (item.action) {
       return (
         <button
           key={`${item.label}-${index}`}
           type="button"
           onClick={item.action}
-          className="
-            sidebar-item
-            d-flex
-            align-items-center
-            gap-3
-            px-3
-            py-2
-            border-0
-            bg-transparent
-            fw-bold
-            text-dark
-            w-100
-          "
+          className="sidebar-item d-flex align-items-center gap-3 px-3 py-2 border-0 bg-transparent fw-bold text-dark w-100"
         >
-          <i
-            className={`bi ${item.icon} fs-4`}
-          />
+          <i className={`bi ${item.icon} fs-4`} />
 
           <span
             className="sidebar-label"
@@ -227,23 +303,12 @@ export const SideBar = ({
         key={`${item.label}-${index}`}
         to={item.path}
         className={({ isActive }) =>
-          `
-            sidebar-item
-            d-flex
-            align-items-center
-            gap-3
-            px-3
-            py-2
-            text-decoration-none
-            fw-bold
-            text-dark
-            ${isActive ? 'active' : ''}
-          `
+          `sidebar-item d-flex align-items-center gap-3 px-3 py-2 text-decoration-none fw-bold text-dark ${
+            isActive ? 'active' : ''
+          }`
         }
       >
-        <i
-          className={`bi ${item.icon} fs-4`}
-        />
+        <i className={`bi ${item.icon} fs-4`} />
 
         <span
           className="sidebar-label"
@@ -257,10 +322,7 @@ export const SideBar = ({
     );
   };
 
-  const renderMobileMenuItem = (
-    item,
-    index
-  ) => {
+  const renderMobileMenuItem = (item, index) => {
     if (item.action) {
       return (
         <button
@@ -269,20 +331,15 @@ export const SideBar = ({
           onClick={() =>
             handleMobileAction(item.action)
           }
-          className=" mobile-menu-item d-flex align-items-center gap-3 px-3 py-3 border-0 bg-transparent text-dark fw-bold w-100"
+          className="mobile-menu-item d-flex align-items-center gap-3 px-3 py-3 border-0 bg-transparent text-dark fw-bold w-100"
         >
-          <i
-            className={`bi ${item.icon} fs-4`}
-          />
-
+          <i className={`bi ${item.icon} fs-4`} />
           <span>{item.label}</span>
         </button>
       );
     }
 
-    const active = isMobileRouteActive(
-      item.path
-    );
+    const active = isMobileRouteActive(item.path);
 
     return (
       <button
@@ -291,25 +348,11 @@ export const SideBar = ({
         onClick={() =>
           handleMobileNavigation(item.path)
         }
-        className={`
-          mobile-menu-item
-          d-flex
-          align-items-center
-          gap-3
-          px-3
-          py-3
-          border-0
-          bg-transparent
-          text-dark
-          fw-bold
-          w-100
-          ${active ? 'active' : ''}
-        `}
+        className={`mobile-menu-item d-flex align-items-center gap-3 px-3 py-3 border-0 bg-transparent text-dark fw-bold w-100 ${
+          active ? 'active' : ''
+        }`}
       >
-        <i
-          className={`bi ${item.icon} fs-4`}
-        />
-
+        <i className={`bi ${item.icon} fs-4`} />
         <span>{item.label}</span>
       </button>
     );
@@ -318,45 +361,21 @@ export const SideBar = ({
   return (
     <>
       {/* Navbar móvil */}
-      <nav
-        className="
-          navbar
-          mobile-navbar
-          fixed-top
-          d-lg-none
-          shadow-sm
-        "
-      >
+      <nav className="navbar mobile-navbar fixed-top d-lg-none shadow-sm">
         <div className="container-fluid">
           <button
             type="button"
-            className="
-              navbar-brand
-              border-0
-              bg-transparent
-              fw-bold
-              text-dark
-              d-flex
-              align-items-center
-              gap-2
-            "
+            className="navbar-brand border-0 bg-transparent fw-bold text-dark d-flex align-items-center gap-2"
             onClick={() =>
-              handleMobileNavigation(
-                '/HomePage'
-              )
+              handleMobileNavigation('/HomePage')
             }
           >
             <i className="bi bi-heart-pulse-fill text-success" />
-
             <span>PetOne</span>
           </button>
 
           <button
-            className="
-              navbar-toggler
-              border-0
-              shadow-none
-            "
+            className="navbar-toggler border-0 shadow-none"
             type="button"
             data-bs-toggle="offcanvas"
             data-bs-target="#mobileSidebar"
@@ -373,11 +392,7 @@ export const SideBar = ({
 
       {/* Menú móvil */}
       <div
-        className="
-          offcanvas
-          offcanvas-start
-          mobile-offcanvas
-        "
+        className="offcanvas offcanvas-start mobile-offcanvas"
         tabIndex="-1"
         id="mobileSidebar"
         aria-labelledby="mobileSidebarLabel"
@@ -394,7 +409,8 @@ export const SideBar = ({
             {isAuthenticated && (
               <small className="text-muted">
                 {user?.nombre
-                  ? `${user.nombre} ${user?.apellido || ''
+                  ? `${user.nombre} ${
+                      user?.apellido || ''
                     }`.trim()
                   : 'Usuario autenticado'}
               </small>
@@ -411,9 +427,7 @@ export const SideBar = ({
 
         <div className="offcanvas-body d-flex flex-column p-0">
           <div className="flex-grow-1 py-3">
-            {menuItems.map(
-              renderMobileMenuItem
-            )}
+            {menuItems.map(renderMobileMenuItem)}
           </div>
 
           <div className="border-top p-3">
@@ -422,56 +436,24 @@ export const SideBar = ({
                 <button
                   type="button"
                   onClick={() =>
-                    handleMobileNavigation(
-                      '/perfil'
-                    )
+                    handleMobileNavigation('/perfil')
                   }
-                  className={`
-                    mobile-menu-item
-                    d-flex
-                    align-items-center
-                    gap-3
-                    px-3
-                    py-3
-                    border-0
-                    bg-transparent
-                    fw-bold
-                    text-dark
-                    w-100
-                    rounded-3
-                    ${isMobileRouteActive(
-                    '/perfil'
-                  )
+                  className={`mobile-menu-item d-flex align-items-center gap-3 px-3 py-3 border-0 bg-transparent fw-bold text-dark w-100 rounded-3 ${
+                    isMobileRouteActive('/perfil')
                       ? 'active'
                       : ''
-                    }
-                  `}
+                  }`}
                 >
                   <i className="bi bi-person-fill fs-4" />
-
                   <span>Ver Perfil</span>
                 </button>
 
                 <button
                   type="button"
                   onClick={handleMobileLogout}
-                  className="
-                    mobile-menu-item
-                    d-flex
-                    align-items-center
-                    gap-3
-                    px-3
-                    py-3
-                    border-0
-                    bg-transparent
-                    fw-bold
-                    text-danger
-                    w-100
-                    rounded-3
-                  "
+                  className="mobile-menu-item d-flex align-items-center gap-3 px-3 py-3 border-0 bg-transparent fw-bold text-danger w-100 rounded-3"
                 >
                   <i className="bi bi-box-arrow-right fs-4" />
-
                   <span>Cerrar Sesión</span>
                 </button>
               </div>
@@ -479,33 +461,15 @@ export const SideBar = ({
               <button
                 type="button"
                 onClick={() =>
-                  handleMobileNavigation(
-                    '/login'
-                  )
+                  handleMobileNavigation('/login')
                 }
-                className={`
-                  mobile-menu-item
-                  d-flex
-                  align-items-center
-                  gap-3
-                  px-3
-                  py-3
-                  border-0
-                  bg-transparent
-                  fw-bold
-                  text-dark
-                  w-100
-                  rounded-3
-                  ${isMobileRouteActive(
-                  '/login'
-                )
+                className={`mobile-menu-item d-flex align-items-center gap-3 px-3 py-3 border-0 bg-transparent fw-bold text-dark w-100 rounded-3 ${
+                  isMobileRouteActive('/login')
                     ? 'active'
                     : ''
-                  }
-                `}
+                }`}
               >
                 <i className="bi bi-box-arrow-in-right fs-4" />
-
                 <span>Iniciar Sesión</span>
               </button>
             )}
@@ -517,23 +481,10 @@ export const SideBar = ({
       <aside
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
-        className="
-          sidebar
-          d-none
-          d-lg-flex
-          flex-column
-          justify-content-between
-          position-fixed
-          top-0
-          start-0
-          vh-100
-          py-3
-        "
+        className="sidebar d-none d-lg-flex flex-column justify-content-between position-fixed top-0 start-0 vh-100 py-3"
       >
         <div className="d-flex flex-column gap-4 flex-grow-1 justify-content-center">
-          {menuItems.map(
-            renderDesktopMenuItem
-          )}
+          {menuItems.map(renderDesktopMenuItem)}
         </div>
 
         <div className="d-flex flex-column gap-3 px-3 mb-3">
@@ -542,24 +493,15 @@ export const SideBar = ({
               <NavLink
                 to="/perfil"
                 className={({ isActive }) =>
-                  `
-                    sidebar-item
-                    d-flex
-                    align-items-center
-                    gap-3
-                    text-decoration-none
-                    ${isActive ? 'active' : ''}
-                  `
+                  `sidebar-item d-flex align-items-center gap-3 text-decoration-none ${
+                    isActive ? 'active' : ''
+                  }`
                 }
               >
                 <i className="bi bi-person-fill fs-4 fw-bold text-dark" />
 
                 <span
-                  className="
-                    sidebar-label
-                    fw-bold
-                    text-dark
-                  "
+                  className="sidebar-label fw-bold text-dark"
                   style={{
                     opacity: hover ? 1 : 0
                   }}
@@ -571,25 +513,12 @@ export const SideBar = ({
               <button
                 type="button"
                 onClick={handleLogout}
-                className="
-                  sidebar-item
-                  d-flex
-                  align-items-center
-                  gap-3
-                  border-0
-                  bg-transparent
-                  p-0
-                  w-100
-                "
+                className="sidebar-item d-flex align-items-center gap-3 border-0 bg-transparent p-0 w-100"
               >
                 <i className="bi bi-box-arrow-right fs-4 fw-bold text-danger" />
 
                 <span
-                  className="
-                    sidebar-label
-                    fw-bold
-                    text-danger
-                  "
+                  className="sidebar-label fw-bold text-danger"
                   style={{
                     opacity: hover ? 1 : 0
                   }}
@@ -602,24 +531,15 @@ export const SideBar = ({
             <NavLink
               to="/login"
               className={({ isActive }) =>
-                `
-                  sidebar-item
-                  d-flex
-                  align-items-center
-                  gap-3
-                  text-decoration-none
-                  ${isActive ? 'active' : ''}
-                `
+                `sidebar-item d-flex align-items-center gap-3 text-decoration-none ${
+                  isActive ? 'active' : ''
+                }`
               }
             >
               <i className="bi bi-box-arrow-in-right fs-4 fw-bold text-dark" />
 
               <span
-                className="
-                  sidebar-label
-                  fw-bold
-                  text-dark
-                "
+                className="sidebar-label fw-bold text-dark"
                 style={{
                   opacity: hover ? 1 : 0
                 }}
