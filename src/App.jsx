@@ -17,6 +17,7 @@ import PerfilPublicoPage from './pages/PerfilPublicoPage'
 import SearchUsersModal from './components/UsersSearch/SearchUsersModal'
 import { API } from './lib/api'
 import { PostDetailPage } from './pages/PostDetailPage'
+import { MascotasPage } from './pages/MascotasPage'
 
 function App() {
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -79,6 +80,7 @@ function App() {
             <Route path="/admin" element={<AdminDashboard />} />
             <Route path="/perfil" element={<PerfilPage />} />
             <Route path="/perfil/:id" element={<PerfilPublicoPage />} />
+            <Route path="/mascotas" element={<MascotasPage />} />
             <Route path="/post/:id" element={<PostDetailPage />} />
           </Routes>
           <SearchUsersModal isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />

@@ -14,7 +14,7 @@ export const SideBar = ({
   const [hover, setHover] = useState(false);
 
   const [isDesktop, setIsDesktop] = useState(() => {
-    if (typeof window === 'undefined') {
+    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
       return true;
     }
 
@@ -53,6 +53,11 @@ export const SideBar = ({
           }
         ]
       : []),
+    {
+      icon: 'bi-heart-fill',
+      label: 'Mascotas',
+      path: '/mascotas'
+    },
     {
       icon: 'bi-chat-fill',
       label: 'Mensajes',
@@ -102,6 +107,10 @@ export const SideBar = ({
   };
 
   useEffect(() => {
+    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
+      return;
+    }
+
     const mediaQuery = window.matchMedia(
       '(min-width: 992px)'
     );

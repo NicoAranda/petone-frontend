@@ -164,6 +164,11 @@ export const PetPerfilView = ({ mascotas = [], onMascotasUpdated, onPublicacione
 
                   <p className="mb-1 small">Tamaño: <strong>{petSize}</strong></p>
 
+                  <div className="d-flex align-items-center gap-2 mb-3 text-muted small">
+                    <i className="bi bi-heart-fill text-danger"></i>
+                    <span>{pet.likes ?? 0} me gusta</span>
+                  </div>
+
                   {pet.descripcion && (
                     <p className="mb-3 small text-muted">{pet.descripcion}</p>
                   )}

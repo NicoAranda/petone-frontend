@@ -19,8 +19,9 @@ describe('SideBar (simple)', () => {
       </MemoryRouter>
     )
 
-    expect(screen.getByText(/Inicio/i)).toBeInTheDocument()
-    const createLabel = screen.getByText(/Crear publicación/i)
+    expect(screen.getAllByText(/Inicio/i).length).toBeGreaterThan(0)
+    expect(screen.getAllByText(/Mascotas/i).length).toBeGreaterThan(0)
+    const createLabel = screen.getAllByText(/Crear publicación/i)[0]
     expect(createLabel).toBeInTheDocument()
 
     await user.click(createLabel)
