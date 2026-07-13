@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { API } from '../../lib/api';
 
-export const PersonalInfo = ({ userData }) => {
+export const PersonalInfo = ({ userData, currentUserId, isOwnProfile = false, onProfileUpdated }) => {
 
   const [formData, setFormData] = useState({
     nombreOrganizacion: '',
@@ -13,6 +14,13 @@ export const PersonalInfo = ({ userData }) => {
     motivo: '',
     acepta: false
   });
+
+  const [isEditingDescription, setIsEditingDescription] = useState(false);
+  const [descriptionDraft, setDescriptionDraft] = useState(userData?.descripcion || '');
+
+  useEffect(() => {
+    setDescriptionDraft(userData?.descripcion || '');
+  }, [userData?.descripcion]);
 
   const handleChange = (e) => {
     const { name, value, checked, type } = e.target;
@@ -29,6 +37,36 @@ export const PersonalInfo = ({ userData }) => {
     console.log(formData);
 
     // Aquí irá el axios hacia el BFF
+  };
+
+  const handleDescriptionSave = async () => {
+    if (!isOwnProfile || !currentUserId) return;
+
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${API}/usuarios/${currentUserId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ descripcion: descriptionDraft })
+      });
+
+      const data = await response.json().catch(() => null);
+
+      if (!response.ok) {
+        throw new Error(data?.error || data?.message || 'No se pudo guardar la descripción');
+      }
+
+      if (onProfileUpdated) {
+        onProfileUpdated();
+      }
+
+      setIsEditingDescription(false);
+    } catch (error) {
+      console.error(error);
+    }
   };
 
 
@@ -62,9 +100,50 @@ export const PersonalInfo = ({ userData }) => {
       {/* Contenido principal */}
       <div className="container px-4 mt-4 mb-5 pb-5">
 
-        <p className="text-secondary lead fs-6">
-          Este usuario no tiene descripción...
-        </p>
+        {!isOwnProfile && !userData?.descripcion ? (
+          <p className="text-secondary lead fs-6">Este usuario no tiene descripción...</p>
+        ) : null}
+
+        {isOwnProfile ? (
+          <div className="border rounded-3 p-3 mb-3 bg-light">
+            <div className="d-flex justify-content-between align-items-center mb-2">
+              <h6 className="mb-0">Descripción</h6>
+              {!isEditingDescription ? (
+                <button className="btn btn-sm btn-outline-success" onClick={() => setIsEditingDescription(true)}>
+                  Editar
+                </button>
+              ) : (
+                <div className="d-flex gap-2">
+                  <button className="btn btn-sm btn-outline-secondary" onClick={() => {
+                    setIsEditingDescription(false);
+                    setDescriptionDraft(userData?.descripcion || '');
+                  }}>
+                    Cancelar
+                  </button>
+                  <button className="btn btn-sm btn-success" onClick={handleDescriptionSave}>
+                    Guardar
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {!isEditingDescription ? (
+              <p className="mb-0 text-secondary">
+                {userData?.descripcion || 'Aún no agregaste una descripción.'}
+              </p>
+            ) : (
+              <textarea
+                className="form-control"
+                rows="3"
+                value={descriptionDraft}
+                onChange={(e) => setDescriptionDraft(e.target.value)}
+                placeholder="Escribe una descripción para tu perfil"
+              />
+            )}
+          </div>
+        ) : userData?.descripcion ? (
+          <p className="text-secondary lead fs-6">{userData.descripcion}</p>
+        ) : null}
 
         <div className="row g-4 mt-2">
 

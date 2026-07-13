@@ -9,6 +9,7 @@ export const PerfilPage = () => {
   const [userData, setUserData] = useState(null);
   const [publicaciones, setPublicaciones] = useState([]);
   const [mascotas, setMascotas] = useState([]);
+  const [currentUserId, setCurrentUserId] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('publicaciones');
@@ -80,6 +81,7 @@ export const PerfilPage = () => {
         const payloadBase64 = token.split('.')[1];
         const decodedPayload = JSON.parse(atob(payloadBase64));
         const userId = decodedPayload.id;
+        setCurrentUserId(userId);
 
         if (!userId) {
           throw new Error('No se pudo obtener el ID del usuario desde el token.');
@@ -169,7 +171,23 @@ export const PerfilPage = () => {
     <>
       <div className="d-flex justify-content-center align-items-center">
         <section className="container-fluid p-0 overflow-hidden bg-white w-50 mx-auto shadow rounded-4">
-          <PersonalInfo userData={userData} />
+          <PersonalInfo userData={userData} currentUserId={currentUserId} isOwnProfile={true} onProfileUpdated={() => {
+            const token = localStorage.getItem('token');
+            if (!token) return;
+            const payloadBase64 = token.split('.')[1];
+            const decodedPayload = JSON.parse(atob(payloadBase64));
+            const userId = decodedPayload.id;
+            fetch(`${API}/usuarios/${userId}`, {
+              method: 'GET',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`
+              }
+            })
+              .then((res) => res.ok ? res.json() : null)
+              .then((data) => data && setUserData(data))
+              .catch(() => {})
+          }} />
         </section>
       </div>
 

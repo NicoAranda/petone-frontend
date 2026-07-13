@@ -24,7 +24,6 @@ export const PerfilPublicoPage = () => {
         const pData = await pRes.json()
         setUserData(uData)
         const filtered = pData.filter(p => (p.userId && String(p.userId) === String(id)) || (p.usuario && String(p.usuario.id) === String(id)))
-        // sort desc by fecha
         filtered.sort((a,b) => {
           const da = a.fechaPublicacion ? new Date(a.fechaPublicacion).getTime() : 0
           const db = b.fechaPublicacion ? new Date(b.fechaPublicacion).getTime() : 0
@@ -51,6 +50,9 @@ export const PerfilPublicoPage = () => {
           <div>
             <h4 className="mb-0">{userData.nombre} {userData.apellido}</h4>
             <div className="text-muted">{userData.email}</div>
+            {userData.descripcion ? (
+              <p className="mt-2 mb-0 text-secondary">{userData.descripcion}</p>
+            ) : null}
           </div>
         </div>
       </div>
