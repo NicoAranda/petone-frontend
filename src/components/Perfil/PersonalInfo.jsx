@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { API } from '../../lib/api';
+import './Perfil.css';
 
 export const PersonalInfo = ({
   userData,
@@ -18,20 +19,34 @@ export const PersonalInfo = ({
     acepta: false
   };
 
-  const [formData, setFormData] = useState(initialFormData);
+  const [formData, setFormData] =
+    useState(initialFormData);
   const [loading, setLoading] = useState(false);
   const [mensaje, setMensaje] = useState('');
-  const [mensajeTipo, setMensajeTipo] = useState('');
+  const [mensajeTipo, setMensajeTipo] =
+    useState('');
 
-  const requestStatus = organizationRequest?.estado?.toUpperCase();
-  const userRole = userData?.rol?.toUpperCase();
+  const requestStatus =
+    organizationRequest?.estado?.toUpperCase();
 
-  const handleChange = (e) => {
-    const { name, value, checked, type } = e.target;
+  const userRole =
+    userData?.rol?.toUpperCase();
 
-    setFormData((prev) => ({
-      ...prev,
-      [name]: type === 'checkbox' ? checked : value
+  const initials = `${userData?.nombre?.charAt(0) || ''}${userData?.apellido?.charAt(0) || ''
+    }`.toUpperCase();
+
+  const handleChange = (event) => {
+    const {
+      name,
+      value,
+      checked,
+      type
+    } = event.target;
+
+    setFormData((previous) => ({
+      ...previous,
+      [name]:
+        type === 'checkbox' ? checked : value
     }));
   };
 
@@ -51,72 +66,73 @@ export const PersonalInfo = ({
         'No se pudo enviar la solicitud.'
       );
     } catch {
-      try {
-        const text = await response.text();
-        return text || 'No se pudo enviar la solicitud.';
-      } catch {
-        return 'No se pudo enviar la solicitud.';
-      }
+      return 'No se pudo enviar la solicitud.';
     }
   };
 
   const closeBootstrapModal = () => {
-    const modalElement = document.getElementById('modalOrganizacion');
+    const modalElement =
+      document.getElementById(
+        'modalOrganizacion'
+      );
 
     if (!modalElement) {
       return;
     }
 
-    /*
-     * Intenta cerrar el modal mediante Bootstrap.
-     * Requiere bootstrap.bundle.min.js importado en main.jsx.
-     */
     if (window.bootstrap?.Modal) {
       const modalInstance =
-        window.bootstrap.Modal.getInstance(modalElement) ||
-        window.bootstrap.Modal.getOrCreateInstance(modalElement);
+        window.bootstrap.Modal.getInstance(
+          modalElement
+        ) ||
+        window.bootstrap.Modal.getOrCreateInstance(
+          modalElement
+        );
 
       modalInstance.hide();
       return;
     }
 
-    /*
-     * Respaldo en caso de que Bootstrap no esté disponible
-     * como propiedad global de window.
-     */
-    const closeButton = modalElement.querySelector(
-      '[data-bs-dismiss="modal"]'
-    );
-
-    closeButton?.click();
+    modalElement
+      .querySelector(
+        '[data-bs-dismiss="modal"]'
+      )
+      ?.click();
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleSubmit = async (event) => {
+    event.preventDefault();
 
     setMensaje('');
     setMensajeTipo('');
+    setLoading(true);
 
     try {
-      setLoading(true);
-
-      const token = localStorage.getItem('token');
+      const token =
+        localStorage.getItem('token');
 
       if (!token) {
-        throw new Error('No hay una sesión iniciada.');
+        throw new Error(
+          'No hay una sesión iniciada.'
+        );
       }
 
       const tokenParts = token.split('.');
 
       if (tokenParts.length !== 3) {
-        throw new Error('El token de sesión no es válido.');
+        throw new Error(
+          'El token de sesión no es válido.'
+        );
       }
 
       const payloadBase64 = tokenParts[1]
         .replace(/-/g, '+')
         .replace(/_/g, '/');
 
-      const payload = JSON.parse(atob(payloadBase64));
+      const payload = JSON.parse(
+        atob(payloadBase64)
+      );
+
       const usuarioId = payload.id;
 
       if (!usuarioId) {
@@ -125,21 +141,20 @@ export const PersonalInfo = ({
         );
       }
 
-      if (!formData.acepta) {
-        throw new Error(
-          'Debes aceptar la declaración antes de enviar la solicitud.'
-        );
-      }
-
       const body = {
-        nombreOrganizacion: formData.nombreOrganizacion.trim(),
-        tipoOrganizacion: formData.tipoOrganizacion,
-        correoInstitucional: formData.correoInstitucional.trim(),
+        nombreOrganizacion:
+          formData.nombreOrganizacion.trim(),
+        tipoOrganizacion:
+          formData.tipoOrganizacion,
+        correoInstitucional:
+          formData.correoInstitucional.trim(),
         telefono: formData.telefono.trim(),
         direccion: formData.direccion.trim(),
         sitioWeb: formData.sitioWeb.trim(),
-        descripcion: formData.descripcion.trim(),
-        motivoSolicitud: formData.motivo.trim()
+        descripcion:
+          formData.descripcion.trim(),
+        motivoSolicitud:
+          formData.motivo.trim()
       };
 
       const response = await fetch(
@@ -147,7 +162,8 @@ export const PersonalInfo = ({
         {
           method: 'POST',
           headers: {
-            'Content-Type': 'application/json',
+            'Content-Type':
+              'application/json',
             Authorization: `Bearer ${token}`
           },
           body: JSON.stringify(body)
@@ -155,11 +171,14 @@ export const PersonalInfo = ({
       );
 
       if (!response.ok) {
-        const errorMessage = await getErrorMessage(response);
-        throw new Error(errorMessage);
+        throw new Error(
+          await getErrorMessage(response)
+        );
       }
 
-      setMensaje('Solicitud enviada correctamente.');
+      setMensaje(
+        'Solicitud enviada correctamente.'
+      );
       setMensajeTipo('success');
       setFormData(initialFormData);
 
@@ -167,14 +186,19 @@ export const PersonalInfo = ({
         await onRequestCreated();
       }
 
-      setTimeout(() => {
-        closeBootstrapModal();
-      }, 500);
-    } catch (err) {
-      console.error('Error al enviar solicitud:', err);
+      window.setTimeout(
+        closeBootstrapModal,
+        600
+      );
+    } catch (error) {
+      console.error(
+        'Error al enviar solicitud:',
+        error
+      );
 
       setMensaje(
-        err.message || 'Ocurrió un error al enviar la solicitud.'
+        error.message ||
+        'Ocurrió un error al enviar la solicitud.'
       );
 
       setMensajeTipo('danger');
@@ -184,23 +208,30 @@ export const PersonalInfo = ({
   };
 
   const getStatusBadgeClass = () => {
-    const statusClasses = {
+    const classes = {
       PENDIENTE: 'bg-warning text-dark',
       APROBADA: 'bg-success',
       RECHAZADA: 'bg-danger'
     };
 
-    return statusClasses[requestStatus] || 'bg-secondary';
+    return (
+      classes[requestStatus] ||
+      'bg-secondary'
+    );
   };
 
   const getStatusLabel = () => {
-    const statusLabels = {
+    const labels = {
       PENDIENTE: 'Pendiente',
       APROBADA: 'Aprobada',
       RECHAZADA: 'Rechazada'
     };
 
-    return statusLabels[requestStatus] || requestStatus;
+    return (
+      labels[requestStatus] ||
+      requestStatus ||
+      'Sin estado'
+    );
   };
 
   const formatDate = (date) => {
@@ -210,37 +241,45 @@ export const PersonalInfo = ({
 
     const parsedDate = new Date(date);
 
-    if (Number.isNaN(parsedDate.getTime())) {
+    if (
+      Number.isNaN(parsedDate.getTime())
+    ) {
       return date;
     }
 
-    return parsedDate.toLocaleDateString('es-CL', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric'
-    });
+    return parsedDate.toLocaleDateString(
+      'es-CL'
+    );
   };
 
+  /*
+   * Solo CLIENTE puede solicitar el rol.
+   * ADMIN y ORGANIZACION no deben ver el botón.
+   */
   const canCreateRequest =
-    userRole !== 'ORGANIZACION' &&
-    (!organizationRequest || requestStatus === 'RECHAZADA');
+    userRole === 'CLIENTE' &&
+    (!organizationRequest ||
+      requestStatus === 'RECHAZADA');
 
   const renderOrganizationSection = () => {
+    if (userRole === 'ADMIN') {
+      return null;
+    }
+
     if (userRole === 'ORGANIZACION') {
       return (
-        <div className="alert alert-success mb-0">
-          <div className="d-flex align-items-center gap-2">
-            <i className="bi bi-patch-check-fill fs-4" />
+        <div className="profile-status-card profile-status-success">
+          <i className="bi bi-patch-check-fill" />
 
-            <div>
-              <div className="fw-bold">
-                Cuenta de organización
-              </div>
+          <div>
+            <strong>
+              Cuenta de organización
+            </strong>
 
-              <small>
-                Tu cuenta ya posee el rol ORGANIZACION.
-              </small>
-            </div>
+            <small>
+              Tu cuenta está verificada como
+              organización.
+            </small>
           </div>
         </div>
       );
@@ -248,25 +287,21 @@ export const PersonalInfo = ({
 
     if (requestStatus === 'PENDIENTE') {
       return (
-        <div className="alert alert-warning mb-0">
-          <div className="d-flex align-items-start gap-2">
-            <i className="bi bi-hourglass-split fs-4" />
+        <div className="profile-status-card profile-status-warning">
+          <i className="bi bi-hourglass-split" />
 
-            <div>
-              <div className="fw-bold">
-                Solicitud pendiente
-              </div>
+          <div>
+            <strong>
+              Solicitud pendiente
+            </strong>
 
-              <small>
-                Tu solicitud está siendo revisada por un
-                administrador.
-              </small>
-
-              <div className="mt-2 small">
-                Enviada el{' '}
-                {formatDate(organizationRequest.fechaSolicitud)}
-              </div>
-            </div>
+            <small>
+              Enviada el{' '}
+              {formatDate(
+                organizationRequest.fechaSolicitud
+              )}
+              . Un administrador debe revisarla.
+            </small>
           </div>
         </div>
       );
@@ -274,28 +309,25 @@ export const PersonalInfo = ({
 
     if (requestStatus === 'APROBADA') {
       return (
-        <div className="alert alert-success mb-0">
-          <div className="d-flex align-items-start gap-2">
-            <i className="bi bi-check-circle-fill fs-4" />
+        <div className="profile-status-card profile-status-success">
+          <i className="bi bi-check-circle-fill" />
 
-            <div>
-              <div className="fw-bold">
-                Solicitud aprobada
-              </div>
+          <div>
+            <strong>
+              Solicitud aprobada
+            </strong>
 
-              <small>
-                Tu solicitud fue aprobada. Cierra sesión y vuelve
-                a iniciar para actualizar el rol almacenado en el
-                token.
-              </small>
+            <small>
+              Tu solicitud fue aprobada.
+            </small>
 
-              {organizationRequest.respuestaAdministrador && (
-                <div className="mt-2">
-                  <strong>Respuesta:</strong>{' '}
-                  {organizationRequest.respuestaAdministrador}
-                </div>
-              )}
-            </div>
+            {organizationRequest.respuestaAdministrador && (
+              <p className="small mb-0 mt-2">
+                {
+                  organizationRequest.respuestaAdministrador
+                }
+              </p>
+            )}
           </div>
         </div>
       );
@@ -303,34 +335,25 @@ export const PersonalInfo = ({
 
     if (requestStatus === 'RECHAZADA') {
       return (
-        <div>
-          <div className="alert alert-danger">
-            <div className="d-flex align-items-start gap-2">
-              <i className="bi bi-x-circle-fill fs-4" />
+        <div className="d-flex flex-column gap-3">
+          <div className="profile-status-card profile-status-danger">
+            <i className="bi bi-x-circle-fill" />
 
-              <div>
-                <div className="fw-bold">
-                  Solicitud rechazada
-                </div>
+            <div>
+              <strong>
+                Solicitud rechazada
+              </strong>
 
-                {organizationRequest.respuestaAdministrador ? (
-                  <div className="mt-1">
-                    <strong>Motivo:</strong>{' '}
-                    {organizationRequest.respuestaAdministrador}
-                  </div>
-                ) : (
-                  <small>
-                    La solicitud fue rechazada sin una respuesta
-                    adicional.
-                  </small>
-                )}
-              </div>
+              <small>
+                {organizationRequest.respuestaAdministrador ||
+                  'No se indicó un motivo.'}
+              </small>
             </div>
           </div>
 
           <button
             type="button"
-            className="text-center fw-semibold fs-5 profile-nav-link active p-2 border-0 w-100"
+            className="btn btn-success rounded-pill fw-semibold"
             data-bs-toggle="modal"
             data-bs-target="#modalOrganizacion"
             onClick={openModal}
@@ -344,131 +367,134 @@ export const PersonalInfo = ({
     return (
       <button
         type="button"
-        className="text-center fw-semibold fs-5 profile-nav-link active p-2 border-0 w-100"
+        className="btn btn-success rounded-pill fw-semibold profile-organization-button"
         data-bs-toggle="modal"
         data-bs-target="#modalOrganizacion"
         onClick={openModal}
       >
-        Solicitar ser Organización
+        <i className="bi bi-buildings me-2" />
+        Solicitar ser organización
       </button>
     );
   };
 
   return (
     <>
-      {/* Encabezado del perfil */}
-      <div className="container position-relative px-4 mt-5">
-        <div className="d-flex flex-column flex-sm-row align-items-sm-end">
-          <div
-            className="d-flex justify-content-center align-items-center rounded-circle border border-4 border-white text-white shadow"
-            style={{
-              width: '150px',
-              height: '150px',
-              zIndex: 1,
-              fontSize: '4.5rem',
-              fontWeight: 'bold',
-              background:
-                'linear-gradient(135deg, #11998e 0%, #38ef7d 100%)'
-            }}
-          >
-            {userData?.nombre?.charAt(0)?.toUpperCase() || ''}
-            {userData?.apellido?.charAt(0)?.toUpperCase() || ''}
-          </div>
+      <div className="profile-info-card">
+        <div className="profile-cover" />
 
-          <h1 className="ms-sm-4 mt-3 mt-sm-0 mb-sm-4 text-dark fw-bold fs-2 text-start text-capitalize">
-            {userData?.nombre} {userData?.apellido}
-          </h1>
-        </div>
-      </div>
-
-      {/* Contenido principal */}
-      <div className="container px-4 mt-4 mb-5 pb-5">
-        <p className="text-secondary lead fs-6">
-          Este usuario no tiene descripción...
-        </p>
-
-        <div className="row g-4 mt-2">
-          <div className="col-12 col-md-6">
-            <div className="d-flex flex-column border-bottom py-2">
-              <span className="text-muted small">
-                Nombre
-              </span>
-
-              <span className="fw-semibold fs-5">
-                {userData?.nombre || 'No registrado'}
-              </span>
+        <div className="profile-main-content">
+          <div className="profile-identity">
+            <div className="profile-avatar">
+              {initials || 'U'}
             </div>
 
-            <div className="d-flex flex-column border-bottom py-2">
-              <span className="text-muted small">
-                Apellido
-              </span>
+            <div className="profile-name-container">
+              <h1 className="profile-name">
+                {userData?.nombre ||
+                  'Usuario'}{' '}
+                {userData?.apellido || ''}
+              </h1>
 
-              <span className="fw-semibold fs-5">
-                {userData?.apellido || 'No registrado'}
+              <span
+                className={`badge rounded-pill ${userRole === 'ADMIN'
+                    ? 'bg-danger'
+                    : userRole ===
+                      'ORGANIZACION'
+                      ? 'bg-primary'
+                      : 'bg-success'
+                  }`}
+              >
+                {userRole || 'SIN ROL'}
               </span>
             </div>
           </div>
 
-          <div className="col-12 col-md-6">
-            <div className="d-flex flex-column border-bottom py-2">
-              <span className="text-muted small">
-                Email
-              </span>
+          <p className="profile-description">
+            Este usuario no tiene descripción...
+          </p>
 
-              <span className="fw-semibold fs-5">
-                {userData?.email || 'No registrado'}
-              </span>
+          <div className="profile-details-grid">
+            <div className="profile-detail-item">
+              <div className="profile-detail-icon">
+                <i className="bi bi-person" />
+              </div>
+
+              <div>
+                <span>Nombre</span>
+                <strong>
+                  {userData?.nombre ||
+                    'No registrado'}
+                </strong>
+              </div>
             </div>
 
-            <div className="d-flex flex-column border-bottom py-2">
-              <span className="text-muted small">
-                Número de celular
-              </span>
+            <div className="profile-detail-item">
+              <div className="profile-detail-icon">
+                <i className="bi bi-person" />
+              </div>
 
-              <span className="fw-semibold fs-5">
-                {userData?.telefono || 'No registrado'}
-              </span>
+              <div>
+                <span>Apellido</span>
+                <strong>
+                  {userData?.apellido ||
+                    'No registrado'}
+                </strong>
+              </div>
             </div>
-          </div>
 
-          <div className="col-12 col-md-6">
-            <div className="d-flex flex-column border-bottom py-2">
-              <span className="text-muted small">
-                Rol
-              </span>
+            <div className="profile-detail-item">
+              <div className="profile-detail-icon">
+                <i className="bi bi-envelope" />
+              </div>
 
-              <span className="fw-semibold fs-5">
-                {userData?.rol || 'No registrado'}
-              </span>
+              <div>
+                <span>Correo</span>
+                <strong>
+                  {userData?.email ||
+                    'No registrado'}
+                </strong>
+              </div>
+            </div>
+
+            <div className="profile-detail-item">
+              <div className="profile-detail-icon">
+                <i className="bi bi-phone" />
+              </div>
+
+              <div>
+                <span>Teléfono</span>
+                <strong>
+                  {userData?.telefono ||
+                    'No registrado'}
+                </strong>
+              </div>
             </div>
           </div>
 
           {organizationRequest && (
-            <div className="col-12 col-md-6">
-              <div className="d-flex flex-column border-bottom py-2">
-                <span className="text-muted small">
-                  Estado de solicitud
-                </span>
+            <div className="d-flex align-items-center justify-content-between border-top pt-3 mt-4">
+              <span className="small text-muted">
+                Estado de solicitud
+              </span>
 
-                <div className="mt-1">
-                  <span
-                    className={`badge ${getStatusBadgeClass()}`}
-                  >
-                    {getStatusLabel()}
-                  </span>
-                </div>
-              </div>
+              <span
+                className={`badge ${getStatusBadgeClass()}`}
+              >
+                {getStatusLabel()}
+              </span>
             </div>
           )}
 
-          <div className="col-12 mt-3">
-            {renderOrganizationSection()}
-          </div>
+          {(userRole === 'CLIENTE' ||
+            userRole === 'ORGANIZACION') && (
+              <div className="mt-4">
+                {renderOrganizationSection()}
+              </div>
+            )}
         </div>
       </div>
 
-      {/* Modal para crear la solicitud */}
       {canCreateRequest && (
         <div
           className="modal fade"
@@ -477,15 +503,22 @@ export const PersonalInfo = ({
           aria-labelledby="modalOrganizacionLabel"
           aria-hidden="true"
         >
-          <div className="modal-dialog modal-lg modal-dialog-scrollable">
-            <div className="modal-content">
+          <div className="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+            <div className="modal-content border-0 rounded-4">
               <div className="modal-header">
-                <h5
-                  className="modal-title"
-                  id="modalOrganizacionLabel"
-                >
-                  Solicitud de Organización
-                </h5>
+                <div>
+                  <h5
+                    className="modal-title fw-bold"
+                    id="modalOrganizacionLabel"
+                  >
+                    Solicitud de organización
+                  </h5>
+
+                  <small className="text-muted">
+                    Completa los datos para solicitar la
+                    verificación.
+                  </small>
+                </div>
 
                 <button
                   type="button"
@@ -498,69 +531,69 @@ export const PersonalInfo = ({
 
               <form onSubmit={handleSubmit}>
                 <div className="modal-body">
-                  <div className="mb-3">
-                    <label
-                      htmlFor="nombreOrganizacion"
-                      className="form-label"
-                    >
-                      Nombre de la organización
-                    </label>
+                  <div className="row">
+                    <div className="col-12 col-md-7 mb-3">
+                      <label
+                        htmlFor="nombreOrganizacion"
+                        className="form-label"
+                      >
+                        Nombre de la organización
+                      </label>
 
-                    <input
-                      id="nombreOrganizacion"
-                      className="form-control"
-                      name="nombreOrganizacion"
-                      value={formData.nombreOrganizacion}
-                      onChange={handleChange}
-                      maxLength={150}
-                      required
-                    />
-                  </div>
+                      <input
+                        id="nombreOrganizacion"
+                        className="form-control"
+                        name="nombreOrganizacion"
+                        value={
+                          formData.nombreOrganizacion
+                        }
+                        onChange={handleChange}
+                        required
+                      />
+                    </div>
 
-                  <div className="mb-3">
-                    <label
-                      htmlFor="tipoOrganizacion"
-                      className="form-label"
-                    >
-                      Tipo de organización
-                    </label>
+                    <div className="col-12 col-md-5 mb-3">
+                      <label
+                        htmlFor="tipoOrganizacion"
+                        className="form-label"
+                      >
+                        Tipo
+                      </label>
 
-                    <select
-                      id="tipoOrganizacion"
-                      className="form-select"
-                      name="tipoOrganizacion"
-                      value={formData.tipoOrganizacion}
-                      onChange={handleChange}
-                      required
-                    >
-                      <option value="">
-                        Seleccione...
-                      </option>
-
-                      <option value="VETERINARIA">
-                        Clínica Veterinaria
-                      </option>
-
-                      <option value="REFUGIO">
-                        Refugio
-                      </option>
-
-                      <option value="MUNICIPALIDAD">
-                        Municipalidad
-                      </option>
-
-                      <option value="FUNDACION">
-                        Fundación
-                      </option>
-
-                      <option value="OTRO">
-                        Otro
-                      </option>
-                    </select>
+                      <select
+                        id="tipoOrganizacion"
+                        className="form-select"
+                        name="tipoOrganizacion"
+                        value={
+                          formData.tipoOrganizacion
+                        }
+                        onChange={handleChange}
+                        required
+                      >
+                        <option value="">
+                          Seleccione...
+                        </option>
+                        <option value="VETERINARIA">
+                          Clínica veterinaria
+                        </option>
+                        <option value="REFUGIO">
+                          Refugio
+                        </option>
+                        <option value="MUNICIPALIDAD">
+                          Municipalidad
+                        </option>
+                        <option value="FUNDACION">
+                          Fundación
+                        </option>
+                        <option value="OTRO">
+                          Otro
+                        </option>
+                      </select>
+                    </div>
                   </div>
 
                   <div className="row">
-                    <div className="col-md-6 mb-3">
+                    <div className="col-12 col-md-6 mb-3">
                       <label
                         htmlFor="correoInstitucional"
                         className="form-label"
@@ -573,14 +606,15 @@ export const PersonalInfo = ({
                         type="email"
                         className="form-control"
                         name="correoInstitucional"
-                        value={formData.correoInstitucional}
+                        value={
+                          formData.correoInstitucional
+                        }
                         onChange={handleChange}
-                        maxLength={150}
                         required
                       />
                     </div>
 
-                    <div className="col-md-6 mb-3">
+                    <div className="col-12 col-md-6 mb-3">
                       <label
                         htmlFor="telefonoOrganizacion"
                         className="form-label"
@@ -595,7 +629,6 @@ export const PersonalInfo = ({
                         name="telefono"
                         value={formData.telefono}
                         onChange={handleChange}
-                        maxLength={30}
                         required
                       />
                     </div>
@@ -615,7 +648,6 @@ export const PersonalInfo = ({
                       name="direccion"
                       value={formData.direccion}
                       onChange={handleChange}
-                      maxLength={250}
                       required
                     />
                   </div>
@@ -625,7 +657,7 @@ export const PersonalInfo = ({
                       htmlFor="sitioWeb"
                       className="form-label"
                     >
-                      Sitio web (opcional)
+                      Sitio web
                     </label>
 
                     <input
@@ -636,7 +668,6 @@ export const PersonalInfo = ({
                       value={formData.sitioWeb}
                       onChange={handleChange}
                       placeholder="https://ejemplo.cl"
-                      maxLength={250}
                     />
                   </div>
 
@@ -655,7 +686,6 @@ export const PersonalInfo = ({
                       name="descripcion"
                       value={formData.descripcion}
                       onChange={handleChange}
-                      maxLength={1000}
                       required
                     />
                   </div>
@@ -675,7 +705,6 @@ export const PersonalInfo = ({
                       name="motivo"
                       value={formData.motivo}
                       onChange={handleChange}
-                      maxLength={1000}
                       required
                     />
                   </div>
@@ -695,26 +724,24 @@ export const PersonalInfo = ({
                       className="form-check-label"
                       htmlFor="aceptaDeclaracion"
                     >
-                      Declaro que la información proporcionada es
-                      verdadera y autorizo su revisión por un
-                      administrador.
+                      Declaro que la información proporcionada
+                      es verdadera.
                     </label>
                   </div>
 
                   {mensaje && (
                     <div
                       className={`alert alert-${mensajeTipo} mt-3 mb-0`}
-                      role="alert"
                     >
                       {mensaje}
                     </div>
                   )}
                 </div>
 
-                <div className="modal-footer">
+                <div className="modal-footer flex-column-reverse flex-sm-row">
                   <button
                     type="button"
-                    className="btn btn-secondary"
+                    className="btn btn-secondary w-100 w-sm-auto"
                     data-bs-dismiss="modal"
                     disabled={loading}
                   >
@@ -723,7 +750,7 @@ export const PersonalInfo = ({
 
                   <button
                     type="submit"
-                    className="btn btn-success"
+                    className="btn btn-success w-100 w-sm-auto"
                     disabled={loading}
                   >
                     {loading ? (
