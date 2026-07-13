@@ -54,11 +54,6 @@ export const SideBar = ({
         ]
       : []),
     {
-      icon: 'bi-chat-fill',
-      label: 'Mensajes',
-      path: '/mensajes'
-    },
-    {
       icon: 'bi-search',
       label: 'Buscar',
       action: onOpenSearch
