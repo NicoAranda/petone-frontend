@@ -10,26 +10,41 @@ import { PetPerfilView } from '../components/Perfil/PetPerfilView';
 import '../components/Perfil/Perfil.css';
 
 export const PerfilPage = () => {
-  const [userData, setUserData] = useState(null);
-  const [publicaciones, setPublicaciones] = useState([]);
-  const [mascotas, setMascotas] = useState([]);
-  const [currentUserId, setCurrentUserId] = useState(null);
-  const [organizationRequest, setOrganizationRequest] =
+  const [userData, setUserData] =
     useState(null);
 
-  const [isLoading, setIsLoading] = useState(true);
-  const [sectionLoading, setSectionLoading] = useState({
-    publicaciones: false,
-    mascotas: false,
-    organizationRequest: false
-  });
+  const [publicaciones, setPublicaciones] =
+    useState([]);
+
+  const [mascotas, setMascotas] =
+    useState([]);
+
+  const [currentUserId, setCurrentUserId] =
+    useState(null);
+
+  const [
+    organizationRequest,
+    setOrganizationRequest
+  ] = useState(null);
+
+  const [isLoading, setIsLoading] =
+    useState(true);
+
+  const [sectionLoading, setSectionLoading] =
+    useState({
+      publicaciones: false,
+      mascotas: false,
+      organizationRequest: false
+    });
 
   const [error, setError] = useState(null);
+
   const [activeTab, setActiveTab] =
     useState('publicaciones');
 
   const getSessionData = useCallback(() => {
-    const token = localStorage.getItem('token');
+    const token =
+      localStorage.getItem('token');
 
     if (!token) {
       throw new Error(
@@ -54,9 +69,10 @@ export const PerfilPage = () => {
         atob(payloadBase64)
       );
 
-      const userId = decodedPayload.id;
+      const sessionUserId =
+        decodedPayload.id;
 
-      if (!userId) {
+      if (!sessionUserId) {
         throw new Error(
           'No se pudo obtener el ID del usuario desde el token.'
         );
@@ -64,7 +80,7 @@ export const PerfilPage = () => {
 
       return {
         token,
-        userId
+        userId: sessionUserId
       };
     } catch (sessionError) {
       console.error(
@@ -92,13 +108,7 @@ export const PerfilPage = () => {
         defaultMessage
       );
     } catch {
-      try {
-        const text = await response.text();
-
-        return text || defaultMessage;
-      } catch {
-        return defaultMessage;
-      }
+      return defaultMessage;
     }
   };
 
@@ -117,121 +127,121 @@ export const PerfilPage = () => {
     );
 
     if (!response.ok) {
-      const message = await getErrorMessage(
-        response,
-        'Error al obtener los datos del perfil.'
+      throw new Error(
+        await getErrorMessage(
+          response,
+          'Error al obtener los datos del perfil.'
+        )
       );
-
-      throw new Error(message);
     }
 
     const data = await response.json();
+
+    setCurrentUserId(userId);
     setUserData(data);
   }, [getSessionData]);
 
-  const loadPublicaciones = useCallback(async () => {
-    const { token, userId } =
-      getSessionData();
+  const loadPublicaciones =
+    useCallback(async () => {
+      const { token, userId } =
+        getSessionData();
 
-    setSectionLoading((previous) => ({
-      ...previous,
-      publicaciones: true
-    }));
-
-    try {
-      const response = await fetch(
-        `${API}/publicaciones/usuario/${userId}`,
-        {
-          method: 'GET',
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        }
-      );
-
-      if (!response.ok) {
-        const message = await getErrorMessage(
-          response,
-          'Error al obtener las publicaciones.'
-        );
-
-        throw new Error(message);
-      }
-
-      const data = await response.json();
-
-        const payloadBase64 = token.split('.')[1];
-        const decodedPayload = JSON.parse(atob(payloadBase64));
-        const userId = decodedPayload.id;
-        setCurrentUserId(userId);
-      setPublicaciones(
-        Array.isArray(data) ? data : []
-      );
-    } catch (loadError) {
-      console.error(
-        'Error al cargar publicaciones:',
-        loadError
-      );
-
-      setPublicaciones([]);
-      throw loadError;
-    } finally {
       setSectionLoading((previous) => ({
         ...previous,
-        publicaciones: false
+        publicaciones: true
       }));
-    }
-  }, [getSessionData]);
 
-  const loadMascotas = useCallback(async () => {
-    const { token, userId } =
-      getSessionData();
-
-    setSectionLoading((previous) => ({
-      ...previous,
-      mascotas: true
-    }));
-
-    try {
-      const response = await fetch(
-        `${API}/mascotas/usuario/${userId}`,
-        {
-          method: 'GET',
-          headers: {
-            Authorization: `Bearer ${token}`
+      try {
+        const response = await fetch(
+          `${API}/publicaciones/usuario/${userId}`,
+          {
+            method: 'GET',
+            headers: {
+              Authorization: `Bearer ${token}`
+            }
           }
-        }
-      );
-
-      if (!response.ok) {
-        const message = await getErrorMessage(
-          response,
-          'Error al obtener las mascotas.'
         );
 
-        throw new Error(message);
+        if (!response.ok) {
+          throw new Error(
+            await getErrorMessage(
+              response,
+              'Error al obtener las publicaciones.'
+            )
+          );
+        }
+
+        const data = await response.json();
+
+        setPublicaciones(
+          Array.isArray(data) ? data : []
+        );
+      } catch (loadError) {
+        console.error(
+          'Error al cargar publicaciones:',
+          loadError
+        );
+
+        setPublicaciones([]);
+        throw loadError;
+      } finally {
+        setSectionLoading((previous) => ({
+          ...previous,
+          publicaciones: false
+        }));
       }
+    }, [getSessionData]);
 
-      const data = await response.json();
+  const loadMascotas =
+    useCallback(async () => {
+      const { token, userId } =
+        getSessionData();
 
-      setMascotas(
-        Array.isArray(data) ? data : []
-      );
-    } catch (loadError) {
-      console.error(
-        'Error al cargar mascotas:',
-        loadError
-      );
-
-      setMascotas([]);
-      throw loadError;
-    } finally {
       setSectionLoading((previous) => ({
         ...previous,
-        mascotas: false
+        mascotas: true
       }));
-    }
-  }, [getSessionData]);
+
+      try {
+        const response = await fetch(
+          `${API}/mascotas/usuario/${userId}`,
+          {
+            method: 'GET',
+            headers: {
+              Authorization: `Bearer ${token}`
+            }
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error(
+            await getErrorMessage(
+              response,
+              'Error al obtener las mascotas.'
+            )
+          );
+        }
+
+        const data = await response.json();
+
+        setMascotas(
+          Array.isArray(data) ? data : []
+        );
+      } catch (loadError) {
+        console.error(
+          'Error al cargar mascotas:',
+          loadError
+        );
+
+        setMascotas([]);
+        throw loadError;
+      } finally {
+        setSectionLoading((previous) => ({
+          ...previous,
+          mascotas: false
+        }));
+      }
+    }, [getSessionData]);
 
   const loadOrganizationRequests =
     useCallback(async () => {
@@ -255,12 +265,12 @@ export const PerfilPage = () => {
         );
 
         if (!response.ok) {
-          const message = await getErrorMessage(
-            response,
-            'Error al obtener las solicitudes de organización.'
+          throw new Error(
+            await getErrorMessage(
+              response,
+              'Error al obtener las solicitudes de organización.'
+            )
           );
-
-          throw new Error(message);
         }
 
         const data = await response.json();
@@ -269,29 +279,29 @@ export const PerfilPage = () => {
           ? data
           : [];
 
-        const sortedRequests = [...requests].sort(
-          (a, b) => {
-            const dateA = a.fechaSolicitud
-              ? new Date(
+        const sortedRequests = [
+          ...requests
+        ].sort((a, b) => {
+          const dateA = a.fechaSolicitud
+            ? new Date(
                 a.fechaSolicitud
               ).getTime()
-              : 0;
+            : 0;
 
-            const dateB = b.fechaSolicitud
-              ? new Date(
+          const dateB = b.fechaSolicitud
+            ? new Date(
                 b.fechaSolicitud
               ).getTime()
-              : 0;
+            : 0;
 
-            if (dateA !== dateB) {
-              return dateB - dateA;
-            }
-
-            return (
-              (b.id ?? 0) - (a.id ?? 0)
-            );
+          if (dateA !== dateB) {
+            return dateB - dateA;
           }
-        );
+
+          return (
+            (b.id ?? 0) - (a.id ?? 0)
+          );
+        });
 
         setOrganizationRequest(
           sortedRequests[0] || null
@@ -311,16 +321,17 @@ export const PerfilPage = () => {
       }
     }, [getSessionData]);
 
-  const handleMascotasUpdated = async () => {
-    try {
-      await loadMascotas();
-    } catch (updateError) {
-      console.error(
-        'Error al actualizar mascotas:',
-        updateError
-      );
-    }
-  };
+  const handleMascotasUpdated =
+    async () => {
+      try {
+        await loadMascotas();
+      } catch (updateError) {
+        console.error(
+          'Error al actualizar mascotas:',
+          updateError
+        );
+      }
+    };
 
   const handlePublicacionesUpdated =
     async () => {
@@ -339,36 +350,54 @@ export const PerfilPage = () => {
       await loadOrganizationRequests();
     };
 
-  const retryLoadProfile = async () => {
-    setIsLoading(true);
-    setError(null);
+  const retryLoadProfile =
+    useCallback(async () => {
+      setIsLoading(true);
+      setError(null);
 
-    try {
-      await loadUserData();
+      try {
+        await loadUserData();
 
-      await Promise.allSettled([
-        loadPublicaciones(),
-        loadMascotas(),
-        loadOrganizationRequests()
-      ]);
-    } catch (retryError) {
-      setError(
-        retryError.message ||
-        'No se pudo cargar el perfil.'
-      );
-    } finally {
-      setIsLoading(false);
-    }
-  };
+        const results =
+          await Promise.allSettled([
+            loadPublicaciones(),
+            loadMascotas(),
+            loadOrganizationRequests()
+          ]);
+
+        results.forEach((result) => {
+          if (
+            result.status === 'rejected'
+          ) {
+            console.error(
+              'Error cargando una sección del perfil:',
+              result.reason
+            );
+          }
+        });
+      } catch (retryError) {
+        console.error(
+          'Error al cargar el perfil:',
+          retryError
+        );
+
+        setError(
+          retryError.message ||
+            'No se pudo cargar el perfil.'
+        );
+      } finally {
+        setIsLoading(false);
+      }
+    }, [
+      loadUserData,
+      loadPublicaciones,
+      loadMascotas,
+      loadOrganizationRequests
+    ]);
 
   useEffect(() => {
     retryLoadProfile();
-  }, [
-    loadUserData,
-    loadPublicaciones,
-    loadMascotas,
-    loadOrganizationRequests
-  ]);
+  }, [retryLoadProfile]);
 
   const renderTabContent = () => {
     if (
@@ -504,39 +533,25 @@ export const PerfilPage = () => {
   }
 
   return (
-    <>
-      <div className="d-flex justify-content-center align-items-center">
-        <section className="container-fluid p-0 overflow-hidden bg-white w-50 mx-auto shadow rounded-4">
-          <PersonalInfo userData={userData} currentUserId={currentUserId} isOwnProfile={true} onProfileUpdated={() => {
-            const token = localStorage.getItem('token');
-            if (!token) return;
-            const payloadBase64 = token.split('.')[1];
-            const decodedPayload = JSON.parse(atob(payloadBase64));
-            const userId = decodedPayload.id;
-            fetch(`${API}/usuarios/${userId}`, {
-              method: 'GET',
-              headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${token}`
-              }
-            })
-              .then((res) => res.ok ? res.json() : null)
-              .then((data) => data && setUserData(data))
-              .catch(() => {})
-          }} />
-        </section>
-      </div>
     <main className="profile-page">
       <div className="container-fluid px-2 px-sm-3 px-lg-4">
         <div className="profile-page-container mx-auto">
           <section className="profile-header-section">
             <PersonalInfo
               userData={userData}
+              currentUserId={
+                currentUserId ??
+                userData?.id
+              }
+              isOwnProfile={true}
               organizationRequest={
                 organizationRequest
               }
               onRequestCreated={
                 handleOrganizationRequestCreated
+              }
+              onProfileUpdated={
+                loadUserData
               }
             />
           </section>
@@ -557,11 +572,12 @@ export const PerfilPage = () => {
                     activeTab ===
                     'publicaciones'
                   }
-                  className={`nav-link profile-nav-link ${activeTab ===
-                      'publicaciones'
+                  className={`nav-link profile-nav-link ${
+                    activeTab ===
+                    'publicaciones'
                       ? 'active'
                       : ''
-                    }`}
+                  }`}
                   onClick={() =>
                     setActiveTab(
                       'publicaciones'
@@ -577,6 +593,7 @@ export const PerfilPage = () => {
                   <span className="d-sm-none">
                     Posts
                   </span>
+
                 </button>
 
                 <button
@@ -585,10 +602,11 @@ export const PerfilPage = () => {
                   aria-selected={
                     activeTab === 'mascotas'
                   }
-                  className={`nav-link profile-nav-link ${activeTab === 'mascotas'
+                  className={`nav-link profile-nav-link ${
+                    activeTab === 'mascotas'
                       ? 'active'
                       : ''
-                    }`}
+                  }`}
                   onClick={() =>
                     setActiveTab('mascotas')
                   }
@@ -605,10 +623,11 @@ export const PerfilPage = () => {
                   aria-selected={
                     activeTab === 'guardados'
                   }
-                  className={`nav-link profile-nav-link ${activeTab === 'guardados'
+                  className={`nav-link profile-nav-link ${
+                    activeTab === 'guardados'
                       ? 'active'
                       : ''
-                    }`}
+                  }`}
                   onClick={() =>
                     setActiveTab('guardados')
                   }

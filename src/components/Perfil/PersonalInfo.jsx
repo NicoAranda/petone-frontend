@@ -1,12 +1,18 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { API } from '../../lib/api';
 import './Perfil.css';
 
 export const PersonalInfo = ({
   userData,
   organizationRequest,
-  onRequestCreated
+  onRequestCreated,
+  onProfileUpdated,
+  isOwnProfile = true,
+  currentUserId
 }) => {
+  const resolvedUserId =
+    currentUserId ?? userData?.id ?? null;
+
   const initialFormData = {
     nombreOrganizacion: '',
     tipoOrganizacion: '',
@@ -17,32 +23,33 @@ export const PersonalInfo = ({
     descripcion: '',
     motivo: '',
     acepta: false
-  });
-
-  const [isEditingDescription, setIsEditingDescription] = useState(false);
-  const [descriptionDraft, setDescriptionDraft] = useState(userData?.descripcion || '');
-  const [privacyEnabled, setPrivacyEnabled] = useState(Boolean(userData?.privacidadDatos));
-  const [privacyButtonState, setPrivacyButtonState] = useState('apply');
-
-  useEffect(() => {
-    setDescriptionDraft(userData?.descripcion || '');
-    setPrivacyEnabled(Boolean(userData?.privacidadDatos));
-  }, [userData?.descripcion, userData?.privacidadDatos]);
-
-  useEffect(() => {
-    setPrivacyButtonState('apply');
-  }, [currentUserId]);
-
-  const handleChange = (e) => {
-    const { name, value, checked, type } = e.target;
   };
 
   const [formData, setFormData] =
     useState(initialFormData);
+
   const [loading, setLoading] = useState(false);
   const [mensaje, setMensaje] = useState('');
   const [mensajeTipo, setMensajeTipo] =
     useState('');
+
+  const [isEditingDescription, setIsEditingDescription] =
+    useState(false);
+
+  const [descriptionDraft, setDescriptionDraft] =
+    useState(userData?.descripcion || '');
+
+  const [privacyEnabled, setPrivacyEnabled] =
+    useState(Boolean(userData?.privacidadDatos));
+
+  const [privacyButtonState, setPrivacyButtonState] =
+    useState('apply');
+
+  const [savingDescription, setSavingDescription] =
+    useState(false);
+
+  const [savingPrivacy, setSavingPrivacy] =
+    useState(false);
 
   const requestStatus =
     organizationRequest?.estado?.toUpperCase();
@@ -50,8 +57,25 @@ export const PersonalInfo = ({
   const userRole =
     userData?.rol?.toUpperCase();
 
-  const initials = `${userData?.nombre?.charAt(0) || ''}${userData?.apellido?.charAt(0) || ''
-    }`.toUpperCase();
+  const initials = `${userData?.nombre?.charAt(0) || ''}${
+    userData?.apellido?.charAt(0) || ''
+  }`.toUpperCase();
+
+  useEffect(() => {
+    setDescriptionDraft(userData?.descripcion || '');
+
+    setPrivacyEnabled(
+      Boolean(userData?.privacidadDatos)
+    );
+  }, [
+    userData?.descripcion,
+    userData?.privacidadDatos
+  ]);
+
+  useEffect(() => {
+    setPrivacyButtonState('apply');
+    setIsEditingDescription(false);
+  }, [resolvedUserId]);
 
   const handleChange = (event) => {
     const {
@@ -73,7 +97,10 @@ export const PersonalInfo = ({
     setMensajeTipo('');
   };
 
-  const getErrorMessage = async (response) => {
+  const getErrorMessage = async (
+    response,
+    defaultMessage = 'No se pudo completar la operación.'
+  ) => {
     try {
       const data = await response.json();
 
@@ -81,76 +108,148 @@ export const PersonalInfo = ({
         data?.message ||
         data?.error ||
         data?.detail ||
-        'No se pudo enviar la solicitud.'
+        defaultMessage
       );
     } catch {
-      return 'No se pudo enviar la solicitud.';
+      return defaultMessage;
     }
   };
 
+  const refreshProfile = async () => {
+    if (typeof onProfileUpdated === 'function') {
+      await onProfileUpdated();
+    }
   };
 
   const handleDescriptionSave = async () => {
-    if (!isOwnProfile || !currentUserId) return;
+    if (!isOwnProfile || !resolvedUserId) {
+      return;
+    }
+
+    setSavingDescription(true);
+    setMensaje('');
+    setMensajeTipo('');
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`${API}/usuarios/${currentUserId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          descripcion: descriptionDraft,
-          privacidadDatos: privacyEnabled
-        })
-      });
 
-      const data = await response.json().catch(() => null);
+      if (!token) {
+        throw new Error(
+          'No hay una sesión iniciada.'
+        );
+      }
+
+      const response = await fetch(
+        `${API}/usuarios/${resolvedUserId}`,
+        {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            descripcion: descriptionDraft.trim(),
+            privacidadDatos: privacyEnabled
+          })
+        }
+      );
 
       if (!response.ok) {
-        throw new Error(data?.error || data?.message || 'No se pudo guardar la descripción');
+        throw new Error(
+          await getErrorMessage(
+            response,
+            'No se pudo guardar la descripción.'
+          )
+        );
       }
 
-      if (onProfileUpdated) {
-        onProfileUpdated();
-      }
+      await refreshProfile();
 
       setIsEditingDescription(false);
+      setMensaje(
+        'Descripción actualizada correctamente.'
+      );
+      setMensajeTipo('success');
     } catch (error) {
-      console.error(error);
+      console.error(
+        'Error al guardar la descripción:',
+        error
+      );
+
+      setMensaje(
+        error.message ||
+          'No se pudo guardar la descripción.'
+      );
+      setMensajeTipo('danger');
+    } finally {
+      setSavingDescription(false);
     }
   };
 
   const handlePrivacySave = async () => {
-    if (!isOwnProfile || !currentUserId) return;
+    if (!isOwnProfile || !resolvedUserId) {
+      return;
+    }
+
+    setSavingPrivacy(true);
+    setMensaje('');
+    setMensajeTipo('');
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`${API}/usuarios/${currentUserId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
-        },
-        body: JSON.stringify({ privacidadDatos: privacyEnabled })
-      });
 
-      const data = await response.json().catch(() => null);
+      if (!token) {
+        throw new Error(
+          'No hay una sesión iniciada.'
+        );
+      }
+
+      const response = await fetch(
+        `${API}/usuarios/${resolvedUserId}`,
+        {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            privacidadDatos: privacyEnabled
+          })
+        }
+      );
 
       if (!response.ok) {
-        throw new Error(data?.error || data?.message || 'No se pudo aplicar la privacidad');
+        throw new Error(
+          await getErrorMessage(
+            response,
+            'No se pudo aplicar la privacidad.'
+          )
+        );
       }
 
-      if (onProfileUpdated) {
-        onProfileUpdated();
-      }
+      await refreshProfile();
 
       setPrivacyButtonState('applied');
+      setMensaje(
+        'Configuración de privacidad actualizada.'
+      );
+      setMensajeTipo('success');
     } catch (error) {
-      console.error(error);
+      console.error(
+        'Error al guardar la privacidad:',
+        error
+      );
+
+      setMensaje(
+        error.message ||
+          'No se pudo aplicar la privacidad.'
+      );
+      setMensajeTipo('danger');
+    } finally {
+      setSavingPrivacy(false);
     }
+  };
+
   const closeBootstrapModal = () => {
     const modalElement =
       document.getElementById(
@@ -189,8 +288,7 @@ export const PersonalInfo = ({
     setLoading(true);
 
     try {
-      const token =
-        localStorage.getItem('token');
+      const token = localStorage.getItem('token');
 
       if (!token) {
         throw new Error(
@@ -222,18 +320,33 @@ export const PersonalInfo = ({
         );
       }
 
+      if (!formData.acepta) {
+        throw new Error(
+          'Debes aceptar la declaración antes de enviar la solicitud.'
+        );
+      }
+
       const body = {
         nombreOrganizacion:
           formData.nombreOrganizacion.trim(),
+
         tipoOrganizacion:
           formData.tipoOrganizacion,
+
         correoInstitucional:
           formData.correoInstitucional.trim(),
+
         telefono: formData.telefono.trim(),
-        direccion: formData.direccion.trim(),
-        sitioWeb: formData.sitioWeb.trim(),
+
+        direccion:
+          formData.direccion.trim(),
+
+        sitioWeb:
+          formData.sitioWeb.trim(),
+
         descripcion:
           formData.descripcion.trim(),
+
         motivoSolicitud:
           formData.motivo.trim()
       };
@@ -243,8 +356,7 @@ export const PersonalInfo = ({
         {
           method: 'POST',
           headers: {
-            'Content-Type':
-              'application/json',
+            'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`
           },
           body: JSON.stringify(body)
@@ -253,33 +365,38 @@ export const PersonalInfo = ({
 
       if (!response.ok) {
         throw new Error(
-          await getErrorMessage(response)
+          await getErrorMessage(
+            response,
+            'No se pudo enviar la solicitud.'
+          )
         );
       }
 
       setMensaje(
         'Solicitud enviada correctamente.'
       );
+
       setMensajeTipo('success');
       setFormData(initialFormData);
 
-      if (onRequestCreated) {
+      if (
+        typeof onRequestCreated === 'function'
+      ) {
         await onRequestCreated();
       }
 
-      window.setTimeout(
-        closeBootstrapModal,
-        600
-      );
+      window.setTimeout(() => {
+        closeBootstrapModal();
+      }, 600);
     } catch (error) {
       console.error(
-        'Error al enviar solicitud:',
+        'Error al enviar la solicitud:',
         error
       );
 
       setMensaje(
         error.message ||
-        'Ocurrió un error al enviar la solicitud.'
+          'Ocurrió un error al enviar la solicitud.'
       );
 
       setMensajeTipo('danger');
@@ -320,73 +437,6 @@ export const PersonalInfo = ({
       return 'No registrada';
     }
 
-        {!isOwnProfile && !userData?.descripcion ? (
-          <p className="text-secondary lead fs-6">Este usuario no tiene descripción...</p>
-        ) : null}
-
-        {isOwnProfile ? (
-          <>
-            <div className="border rounded-3 p-3 mb-3 bg-light">
-              <div className="d-flex justify-content-between align-items-center mb-2">
-                <h6 className="mb-0">Descripción</h6>
-                {!isEditingDescription ? (
-                  <button className="btn btn-sm btn-outline-success" onClick={() => setIsEditingDescription(true)}>
-                    Editar
-                  </button>
-                ) : (
-                  <div className="d-flex gap-2">
-                    <button className="btn btn-sm btn-outline-secondary" onClick={() => {
-                      setIsEditingDescription(false);
-                      setDescriptionDraft(userData?.descripcion || '');
-                    }}>
-                      Cancelar
-                    </button>
-                    <button className="btn btn-sm btn-success" onClick={handleDescriptionSave}>
-                      Guardar
-                    </button>
-                  </div>
-                )}
-              </div>
-
-              {!isEditingDescription ? (
-                <p className="mb-0 text-secondary">
-                  {userData?.descripcion || 'Aún no agregaste una descripción.'}
-                </p>
-              ) : (
-                <textarea
-                  className="form-control"
-                  rows="3"
-                  value={descriptionDraft}
-                  onChange={(e) => setDescriptionDraft(e.target.value)}
-                  placeholder="Escribe una descripción para tu perfil"
-                />
-              )}
-            </div>
-
-            <div className="d-flex align-items-center gap-2 mb-3">
-              <div className="form-check form-switch mb-0">
-                <input
-                  className="form-check-input"
-                  type="checkbox"
-                  id="privacy-toggle"
-                  checked={privacyEnabled}
-                  onChange={(e) => {
-                    setPrivacyEnabled(e.target.checked)
-                    setPrivacyButtonState('apply')
-                  }}
-                />
-              </div>
-              <label className="form-check-label text-secondary fw-semibold" htmlFor="privacy-toggle">
-                {privacyEnabled ? 'Perfil privado' : 'Perfil público'}
-              </label>
-              <button className="btn btn-sm btn-outline-success ms-2" onClick={handlePrivacySave}>
-                {privacyButtonState === 'applied' ? 'Aplicado' : 'Aplicar'}
-              </button>
-            </div>
-          </>
-        ) : userData?.descripcion ? (
-          <p className="text-secondary lead fs-6">{userData.descripcion}</p>
-        ) : null}
     const parsedDate = new Date(date);
 
     if (
@@ -396,20 +446,189 @@ export const PersonalInfo = ({
     }
 
     return parsedDate.toLocaleDateString(
-      'es-CL'
+      'es-CL',
+      {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric'
+      }
     );
   };
 
-  /*
-   * Solo CLIENTE puede solicitar el rol.
-   * ADMIN y ORGANIZACION no deben ver el botón.
-   */
   const canCreateRequest =
+    isOwnProfile &&
     userRole === 'CLIENTE' &&
     (!organizationRequest ||
       requestStatus === 'RECHAZADA');
 
+  const renderDescriptionSection = () => {
+    if (!isOwnProfile) {
+      return (
+        <div className="profile-description">
+          <p className="mb-0 text-secondary text-break">
+            {userData?.descripcion ||
+              'Este usuario no tiene descripción.'}
+          </p>
+        </div>
+      );
+    }
+
+    return (
+      <div className="profile-description">
+        <div className="border rounded-3 p-3 mb-3 bg-light">
+          <div className="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center gap-2 mb-2">
+            <h2 className="h6 mb-0">
+              Descripción
+            </h2>
+
+            {!isEditingDescription ? (
+              <button
+                type="button"
+                className="btn btn-sm btn-outline-success"
+                onClick={() =>
+                  setIsEditingDescription(true)
+                }
+              >
+                <i className="bi bi-pencil me-1" />
+                Editar
+              </button>
+            ) : (
+              <div className="d-flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  className="btn btn-sm btn-outline-secondary"
+                  onClick={() => {
+                    setIsEditingDescription(false);
+
+                    setDescriptionDraft(
+                      userData?.descripcion || ''
+                    );
+                  }}
+                  disabled={savingDescription}
+                >
+                  Cancelar
+                </button>
+
+                <button
+                  type="button"
+                  className="btn btn-sm btn-success"
+                  onClick={handleDescriptionSave}
+                  disabled={savingDescription}
+                >
+                  {savingDescription ? (
+                    <>
+                      <span
+                        className="spinner-border spinner-border-sm me-1"
+                        aria-hidden="true"
+                      />
+                      Guardando...
+                    </>
+                  ) : (
+                    'Guardar'
+                  )}
+                </button>
+              </div>
+            )}
+          </div>
+
+          {!isEditingDescription ? (
+            <p className="mb-0 text-secondary text-break">
+              {userData?.descripcion ||
+                'Aún no agregaste una descripción.'}
+            </p>
+          ) : (
+            <textarea
+              className="form-control"
+              rows={3}
+              value={descriptionDraft}
+              onChange={(event) =>
+                setDescriptionDraft(
+                  event.target.value
+                )
+              }
+              maxLength={1000}
+              placeholder="Escribe una descripción para tu perfil"
+              disabled={savingDescription}
+            />
+          )}
+        </div>
+
+        <div className="border rounded-3 p-3 bg-light">
+          <div className="d-flex flex-column flex-sm-row align-items-start align-items-sm-center justify-content-between gap-3">
+            <div className="d-flex align-items-center gap-2">
+              <div className="form-check form-switch mb-0">
+                <input
+                  className="form-check-input"
+                  type="checkbox"
+                  id="privacy-toggle"
+                  checked={privacyEnabled}
+                  onChange={(event) => {
+                    setPrivacyEnabled(
+                      event.target.checked
+                    );
+
+                    setPrivacyButtonState(
+                      'apply'
+                    );
+                  }}
+                  disabled={savingPrivacy}
+                />
+              </div>
+
+              <label
+                className="form-check-label text-secondary fw-semibold"
+                htmlFor="privacy-toggle"
+              >
+                {privacyEnabled
+                  ? 'Perfil privado'
+                  : 'Perfil público'}
+              </label>
+            </div>
+
+            <button
+              type="button"
+              className="btn btn-sm btn-outline-success"
+              onClick={handlePrivacySave}
+              disabled={
+                savingPrivacy ||
+                privacyButtonState === 'applied'
+              }
+            >
+              {savingPrivacy ? (
+                <>
+                  <span
+                    className="spinner-border spinner-border-sm me-1"
+                    aria-hidden="true"
+                  />
+                  Aplicando...
+                </>
+              ) : privacyButtonState ===
+                'applied' ? (
+                'Aplicado'
+              ) : (
+                'Aplicar'
+              )}
+            </button>
+          </div>
+        </div>
+
+        {mensaje && (
+          <div
+            className={`alert alert-${mensajeTipo} mt-3 mb-0`}
+            role="alert"
+          >
+            {mensaje}
+          </div>
+        )}
+      </div>
+    );
+  };
+
   const renderOrganizationSection = () => {
+    if (!isOwnProfile) {
+      return null;
+    }
+
     if (userRole === 'ADMIN') {
       return null;
     }
@@ -446,7 +665,7 @@ export const PersonalInfo = ({
             <small>
               Enviada el{' '}
               {formatDate(
-                organizationRequest.fechaSolicitud
+                organizationRequest?.fechaSolicitud
               )}
               . Un administrador debe revisarla.
             </small>
@@ -469,10 +688,12 @@ export const PersonalInfo = ({
               Tu solicitud fue aprobada.
             </small>
 
-            {organizationRequest.respuestaAdministrador && (
+            {organizationRequest
+              ?.respuestaAdministrador && (
               <p className="small mb-0 mt-2">
                 {
-                  organizationRequest.respuestaAdministrador
+                  organizationRequest
+                    .respuestaAdministrador
                 }
               </p>
             )}
@@ -493,7 +714,8 @@ export const PersonalInfo = ({
               </strong>
 
               <small>
-                {organizationRequest.respuestaAdministrador ||
+                {organizationRequest
+                  ?.respuestaAdministrador ||
                   'No se indicó un motivo.'}
               </small>
             </div>
@@ -539,28 +761,26 @@ export const PersonalInfo = ({
 
             <div className="profile-name-container">
               <h1 className="profile-name">
-                {userData?.nombre ||
-                  'Usuario'}{' '}
+                {userData?.nombre || 'Usuario'}{' '}
                 {userData?.apellido || ''}
               </h1>
 
               <span
-                className={`badge rounded-pill ${userRole === 'ADMIN'
+                className={`badge rounded-pill ${
+                  userRole === 'ADMIN'
                     ? 'bg-danger'
                     : userRole ===
-                      'ORGANIZACION'
+                        'ORGANIZACION'
                       ? 'bg-primary'
                       : 'bg-success'
-                  }`}
+                }`}
               >
                 {userRole || 'SIN ROL'}
               </span>
             </div>
           </div>
 
-          <p className="profile-description">
-            Este usuario no tiene descripción...
-          </p>
+          {renderDescriptionSection()}
 
           <div className="profile-details-grid">
             <div className="profile-detail-item">
@@ -570,6 +790,7 @@ export const PersonalInfo = ({
 
               <div>
                 <span>Nombre</span>
+
                 <strong>
                   {userData?.nombre ||
                     'No registrado'}
@@ -584,6 +805,7 @@ export const PersonalInfo = ({
 
               <div>
                 <span>Apellido</span>
+
                 <strong>
                   {userData?.apellido ||
                     'No registrado'}
@@ -598,6 +820,7 @@ export const PersonalInfo = ({
 
               <div>
                 <span>Correo</span>
+
                 <strong>
                   {userData?.email ||
                     'No registrado'}
@@ -612,6 +835,7 @@ export const PersonalInfo = ({
 
               <div>
                 <span>Teléfono</span>
+
                 <strong>
                   {userData?.telefono ||
                     'No registrado'}
@@ -620,22 +844,25 @@ export const PersonalInfo = ({
             </div>
           </div>
 
-          {organizationRequest && (
-            <div className="d-flex align-items-center justify-content-between border-top pt-3 mt-4">
-              <span className="small text-muted">
-                Estado de solicitud
-              </span>
+          {organizationRequest &&
+            isOwnProfile && (
+              <div className="d-flex align-items-center justify-content-between border-top pt-3 mt-4">
+                <span className="small text-muted">
+                  Estado de solicitud
+                </span>
 
-              <span
-                className={`badge ${getStatusBadgeClass()}`}
-              >
-                {getStatusLabel()}
-              </span>
-            </div>
-          )}
+                <span
+                  className={`badge ${getStatusBadgeClass()}`}
+                >
+                  {getStatusLabel()}
+                </span>
+              </div>
+            )}
 
-          {(userRole === 'CLIENTE' ||
-            userRole === 'ORGANIZACION') && (
+          {isOwnProfile &&
+            (userRole === 'CLIENTE' ||
+              userRole ===
+                'ORGANIZACION') && (
               <div className="mt-4">
                 {renderOrganizationSection()}
               </div>
@@ -663,8 +890,8 @@ export const PersonalInfo = ({
                   </h5>
 
                   <small className="text-muted">
-                    Completa los datos para solicitar la
-                    verificación.
+                    Completa los datos para solicitar
+                    la verificación.
                   </small>
                 </div>
 
@@ -690,12 +917,14 @@ export const PersonalInfo = ({
 
                       <input
                         id="nombreOrganizacion"
+                        type="text"
                         className="form-control"
                         name="nombreOrganizacion"
                         value={
                           formData.nombreOrganizacion
                         }
                         onChange={handleChange}
+                        maxLength={150}
                         required
                       />
                     </div>
@@ -721,18 +950,23 @@ export const PersonalInfo = ({
                         <option value="">
                           Seleccione...
                         </option>
+
                         <option value="VETERINARIA">
                           Clínica veterinaria
                         </option>
+
                         <option value="REFUGIO">
                           Refugio
                         </option>
+
                         <option value="MUNICIPALIDAD">
                           Municipalidad
                         </option>
+
                         <option value="FUNDACION">
                           Fundación
                         </option>
+
                         <option value="OTRO">
                           Otro
                         </option>
@@ -758,6 +992,7 @@ export const PersonalInfo = ({
                           formData.correoInstitucional
                         }
                         onChange={handleChange}
+                        maxLength={150}
                         required
                       />
                     </div>
@@ -777,6 +1012,7 @@ export const PersonalInfo = ({
                         name="telefono"
                         value={formData.telefono}
                         onChange={handleChange}
+                        maxLength={30}
                         required
                       />
                     </div>
@@ -792,10 +1028,12 @@ export const PersonalInfo = ({
 
                     <input
                       id="direccionOrganizacion"
+                      type="text"
                       className="form-control"
                       name="direccion"
                       value={formData.direccion}
                       onChange={handleChange}
+                      maxLength={250}
                       required
                     />
                   </div>
@@ -816,6 +1054,7 @@ export const PersonalInfo = ({
                       value={formData.sitioWeb}
                       onChange={handleChange}
                       placeholder="https://ejemplo.cl"
+                      maxLength={250}
                     />
                   </div>
 
@@ -834,6 +1073,7 @@ export const PersonalInfo = ({
                       name="descripcion"
                       value={formData.descripcion}
                       onChange={handleChange}
+                      maxLength={1000}
                       required
                     />
                   </div>
@@ -853,6 +1093,7 @@ export const PersonalInfo = ({
                       name="motivo"
                       value={formData.motivo}
                       onChange={handleChange}
+                      maxLength={1000}
                       required
                     />
                   </div>
@@ -872,14 +1113,15 @@ export const PersonalInfo = ({
                       className="form-check-label"
                       htmlFor="aceptaDeclaracion"
                     >
-                      Declaro que la información proporcionada
-                      es verdadera.
+                      Declaro que la información
+                      proporcionada es verdadera.
                     </label>
                   </div>
 
                   {mensaje && (
                     <div
                       className={`alert alert-${mensajeTipo} mt-3 mb-0`}
+                      role="alert"
                     >
                       {mensaje}
                     </div>
@@ -889,7 +1131,10 @@ export const PersonalInfo = ({
                 <div className="modal-footer flex-column-reverse flex-sm-row">
                   <button
                     type="button"
-                    className="btn btn-secondary w-100 w-sm-auto"
+                    className="btn btn-secondary w-100"
+                    style={{
+                      maxWidth: '220px'
+                    }}
                     data-bs-dismiss="modal"
                     disabled={loading}
                   >
@@ -898,7 +1143,10 @@ export const PersonalInfo = ({
 
                   <button
                     type="submit"
-                    className="btn btn-success w-100 w-sm-auto"
+                    className="btn btn-success w-100"
+                    style={{
+                      maxWidth: '220px'
+                    }}
                     disabled={loading}
                   >
                     {loading ? (
