@@ -13,6 +13,7 @@ export const PerfilPage = () => {
   const [userData, setUserData] = useState(null);
   const [publicaciones, setPublicaciones] = useState([]);
   const [mascotas, setMascotas] = useState([]);
+  const [currentUserId, setCurrentUserId] = useState(null);
   const [organizationRequest, setOrganizationRequest] =
     useState(null);
 
@@ -159,6 +160,10 @@ export const PerfilPage = () => {
 
       const data = await response.json();
 
+        const payloadBase64 = token.split('.')[1];
+        const decodedPayload = JSON.parse(atob(payloadBase64));
+        const userId = decodedPayload.id;
+        setCurrentUserId(userId);
       setPublicaciones(
         Array.isArray(data) ? data : []
       );
@@ -499,6 +504,28 @@ export const PerfilPage = () => {
   }
 
   return (
+    <>
+      <div className="d-flex justify-content-center align-items-center">
+        <section className="container-fluid p-0 overflow-hidden bg-white w-50 mx-auto shadow rounded-4">
+          <PersonalInfo userData={userData} currentUserId={currentUserId} isOwnProfile={true} onProfileUpdated={() => {
+            const token = localStorage.getItem('token');
+            if (!token) return;
+            const payloadBase64 = token.split('.')[1];
+            const decodedPayload = JSON.parse(atob(payloadBase64));
+            const userId = decodedPayload.id;
+            fetch(`${API}/usuarios/${userId}`, {
+              method: 'GET',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`
+              }
+            })
+              .then((res) => res.ok ? res.json() : null)
+              .then((data) => data && setUserData(data))
+              .catch(() => {})
+          }} />
+        </section>
+      </div>
     <main className="profile-page">
       <div className="container-fluid px-2 px-sm-3 px-lg-4">
         <div className="profile-page-container mx-auto">

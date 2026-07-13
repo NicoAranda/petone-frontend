@@ -24,7 +24,6 @@ export const PerfilPublicoPage = () => {
         const pData = await pRes.json()
         setUserData(uData)
         const filtered = pData.filter(p => (p.userId && String(p.userId) === String(id)) || (p.usuario && String(p.usuario.id) === String(id)))
-        // sort desc by fecha
         filtered.sort((a,b) => {
           const da = a.fechaPublicacion ? new Date(a.fechaPublicacion).getTime() : 0
           const db = b.fechaPublicacion ? new Date(b.fechaPublicacion).getTime() : 0
@@ -50,7 +49,18 @@ export const PerfilPublicoPage = () => {
           <img src={`https://ui-avatars.com/api/?name=${encodeURIComponent((userData.nombre||'')+' '+(userData.apellido||''))}&background=198754&color=fff`} alt="avatar" className="rounded-circle" style={{ width: 72, height:72 }} />
           <div>
             <h4 className="mb-0">{userData.nombre} {userData.apellido}</h4>
-            <div className="text-muted">{userData.email}</div>
+            {!userData.privacidadDatos ? (
+              <>
+                <div className="text-muted">{userData.email}</div>
+                {userData.telefono ? <div className="text-muted">{userData.telefono}</div> : null}
+              </>
+            ) : null}
+            {!userData.privacidadDatos && userData.descripcion ? (
+              <p className="mt-2 mb-0 text-secondary">{userData.descripcion}</p>
+            ) : null}
+            {userData.privacidadDatos ? (
+              <p className="mt-2 mb-0 text-secondary">Este usuario ha decidido mantener sus datos privados.</p>
+            ) : null}
           </div>
         </div>
       </div>

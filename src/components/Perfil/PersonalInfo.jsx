@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { API } from '../../lib/api';
 import './Perfil.css';
 
@@ -17,6 +17,24 @@ export const PersonalInfo = ({
     descripcion: '',
     motivo: '',
     acepta: false
+  });
+
+  const [isEditingDescription, setIsEditingDescription] = useState(false);
+  const [descriptionDraft, setDescriptionDraft] = useState(userData?.descripcion || '');
+  const [privacyEnabled, setPrivacyEnabled] = useState(Boolean(userData?.privacidadDatos));
+  const [privacyButtonState, setPrivacyButtonState] = useState('apply');
+
+  useEffect(() => {
+    setDescriptionDraft(userData?.descripcion || '');
+    setPrivacyEnabled(Boolean(userData?.privacidadDatos));
+  }, [userData?.descripcion, userData?.privacidadDatos]);
+
+  useEffect(() => {
+    setPrivacyButtonState('apply');
+  }, [currentUserId]);
+
+  const handleChange = (e) => {
+    const { name, value, checked, type } = e.target;
   };
 
   const [formData, setFormData] =
@@ -70,6 +88,69 @@ export const PersonalInfo = ({
     }
   };
 
+  };
+
+  const handleDescriptionSave = async () => {
+    if (!isOwnProfile || !currentUserId) return;
+
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${API}/usuarios/${currentUserId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          descripcion: descriptionDraft,
+          privacidadDatos: privacyEnabled
+        })
+      });
+
+      const data = await response.json().catch(() => null);
+
+      if (!response.ok) {
+        throw new Error(data?.error || data?.message || 'No se pudo guardar la descripción');
+      }
+
+      if (onProfileUpdated) {
+        onProfileUpdated();
+      }
+
+      setIsEditingDescription(false);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const handlePrivacySave = async () => {
+    if (!isOwnProfile || !currentUserId) return;
+
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${API}/usuarios/${currentUserId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ privacidadDatos: privacyEnabled })
+      });
+
+      const data = await response.json().catch(() => null);
+
+      if (!response.ok) {
+        throw new Error(data?.error || data?.message || 'No se pudo aplicar la privacidad');
+      }
+
+      if (onProfileUpdated) {
+        onProfileUpdated();
+      }
+
+      setPrivacyButtonState('applied');
+    } catch (error) {
+      console.error(error);
+    }
   const closeBootstrapModal = () => {
     const modalElement =
       document.getElementById(
@@ -239,6 +320,73 @@ export const PersonalInfo = ({
       return 'No registrada';
     }
 
+        {!isOwnProfile && !userData?.descripcion ? (
+          <p className="text-secondary lead fs-6">Este usuario no tiene descripción...</p>
+        ) : null}
+
+        {isOwnProfile ? (
+          <>
+            <div className="border rounded-3 p-3 mb-3 bg-light">
+              <div className="d-flex justify-content-between align-items-center mb-2">
+                <h6 className="mb-0">Descripción</h6>
+                {!isEditingDescription ? (
+                  <button className="btn btn-sm btn-outline-success" onClick={() => setIsEditingDescription(true)}>
+                    Editar
+                  </button>
+                ) : (
+                  <div className="d-flex gap-2">
+                    <button className="btn btn-sm btn-outline-secondary" onClick={() => {
+                      setIsEditingDescription(false);
+                      setDescriptionDraft(userData?.descripcion || '');
+                    }}>
+                      Cancelar
+                    </button>
+                    <button className="btn btn-sm btn-success" onClick={handleDescriptionSave}>
+                      Guardar
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {!isEditingDescription ? (
+                <p className="mb-0 text-secondary">
+                  {userData?.descripcion || 'Aún no agregaste una descripción.'}
+                </p>
+              ) : (
+                <textarea
+                  className="form-control"
+                  rows="3"
+                  value={descriptionDraft}
+                  onChange={(e) => setDescriptionDraft(e.target.value)}
+                  placeholder="Escribe una descripción para tu perfil"
+                />
+              )}
+            </div>
+
+            <div className="d-flex align-items-center gap-2 mb-3">
+              <div className="form-check form-switch mb-0">
+                <input
+                  className="form-check-input"
+                  type="checkbox"
+                  id="privacy-toggle"
+                  checked={privacyEnabled}
+                  onChange={(e) => {
+                    setPrivacyEnabled(e.target.checked)
+                    setPrivacyButtonState('apply')
+                  }}
+                />
+              </div>
+              <label className="form-check-label text-secondary fw-semibold" htmlFor="privacy-toggle">
+                {privacyEnabled ? 'Perfil privado' : 'Perfil público'}
+              </label>
+              <button className="btn btn-sm btn-outline-success ms-2" onClick={handlePrivacySave}>
+                {privacyButtonState === 'applied' ? 'Aplicado' : 'Aplicar'}
+              </button>
+            </div>
+          </>
+        ) : userData?.descripcion ? (
+          <p className="text-secondary lead fs-6">{userData.descripcion}</p>
+        ) : null}
     const parsedDate = new Date(date);
 
     if (
