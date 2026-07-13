@@ -1,12 +1,14 @@
 .sidebar {
+  width: var(--sidebar-width, 80px);
   background: linear-gradient(180deg, #dcefd9 0%, #b7e4c2 100%);
   color: #15321f;
   border-right: 1px solid rgba(33, 140, 71, 0.24);
   box-shadow: 0 0 20px rgba(33, 140, 71, 0.12);
-  z-index: 1000;
-  width: var(--sidebar-width);
-  transition: width 0.28s ease, background-color 0.2s ease;
+  transition:
+    width 0.28s ease,
+    background-color 0.2s ease;
   overflow: hidden;
+  z-index: 1030;
 }
 
 .sidebar .logo-img {
@@ -17,3 +19,71 @@
   color: #333333 !important;
 }
 
+.sidebar-item {
+  min-height: 45px;
+  cursor: pointer;
+  text-align: left;
+  white-space: nowrap;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
+}
+
+.sidebar-item:hover {
+  background-color: rgba(33, 140, 71, 0.12) !important;
+}
+
+.sidebar-item.active {
+  color: #146c43 !important;
+  background-color: rgba(25, 135, 84, 0.16) !important;
+  border-left: 4px solid #198754;
+}
+
+.sidebar-label {
+  white-space: nowrap;
+  transition: opacity 0.2s ease;
+}
+
+/* Navbar móvil */
+
+.mobile-navbar {
+  min-height: 64px;
+  background: linear-gradient(90deg, #dcefd9 0%, #b7e4c2 100%);
+  border-bottom: 1px solid rgba(33, 140, 71, 0.24);
+  z-index: 1040;
+}
+
+.mobile-navbar-spacer {
+  height: 90px;
+}
+
+.mobile-offcanvas {
+  width: min(85vw, 320px) !important;
+  background: linear-gradient(180deg, #eaf7e8 0%, #ccebd3 100%);
+}
+
+.mobile-menu-item {
+  cursor: pointer;
+  text-align: left;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
+}
+
+.mobile-menu-item:hover {
+  background-color: rgba(33, 140, 71, 0.12) !important;
+}
+
+.mobile-menu-item.active {
+  color: #146c43 !important;
+  background-color: rgba(25, 135, 84, 0.16) !important;
+  border-left: 4px solid #198754;
+}
+
+/* El sidebar no debe reservar espacio en móvil */
+
+@media (max-width: 991.98px) {
+  :root {
+    --sidebar-width: 0px;
+  }
+}
