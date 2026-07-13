@@ -5,6 +5,24 @@ import toast from 'react-hot-toast';
 export const MascotasPage = () => {
   const [mascotas, setMascotas] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [likedPets, setLikedPets] = useState(() => {
+    try {
+      const stored = window.localStorage.getItem('petone-liked-pets');
+      return stored ? JSON.parse(stored) : [];
+    } catch {
+      return [];
+    }
+  });
+  const [likeLoading, setLikeLoading] = useState({});
+
+  const saveLikedPets = (newLikedPets) => {
+    setLikedPets(newLikedPets);
+    try {
+      window.localStorage.setItem('petone-liked-pets', JSON.stringify(newLikedPets));
+    } catch (error) {
+      console.warn('No se pudo guardar el estado de likes en localStorage', error);
+    }
+  };
 
   const cargarMascotas = async () => {
     try {
@@ -32,23 +50,30 @@ export const MascotasPage = () => {
   }, []);
 
   const handleLike = async (petId) => {
+    const isLiked = likedPets.includes(petId);
+    const method = isLiked ? 'DELETE' : 'POST';
+    const url = `${API}/mascotas/${petId}/like`;
+
     try {
+      setLikeLoading((prev) => ({ ...prev, [petId]: true }));
       const token = localStorage.getItem('token');
-      const response = await fetch(`${API}/mascotas/${petId}/like`, {
-        method: 'POST',
+      const response = await fetch(url, {
+        method,
         headers: token ? { Authorization: `Bearer ${token}` } : {}
       });
 
       if (!response.ok) {
-        throw new Error('No se pudo dar like');
+        throw new Error(isLiked ? 'No se pudo quitar el like' : 'No se pudo dar like');
       }
 
       const updatedPet = await response.json();
       setMascotas((prev) => prev.map((pet) => (pet.id === petId ? updatedPet : pet)));
-      toast.success('Me gusta agregado');
+      saveLikedPets(isLiked ? likedPets.filter((id) => id !== petId) : [...likedPets, petId]);
     } catch (error) {
       console.error(error);
-      toast.error('No se pudo dar like');
+      toast.error(isLiked ? 'No se pudo quitar el like' : 'No se pudo dar like');
+    } finally {
+      setLikeLoading((prev) => ({ ...prev, [petId]: false }));
     }
   };
 
@@ -62,24 +87,24 @@ export const MascotasPage = () => {
   }
 
   return (
-    <div className="container py-4">
-      <div className="text-center mb-4">
-        <h2 className="fw-bold">Mascotas</h2>
-        <p className="text-muted">Descubre mascotas publicadas por las cuentas y dale me gusta a las que más te gusten.</p>
-      </div>
+    <div className="container py-4 d-flex justify-content-center">
+      <div style={{ maxWidth: '470px', width: '100%' }}>
+        <div className="text-center mb-4">
+          <h2 className="fw-bold">Mascotas</h2>
+          <p className="text-muted">Descubre mascotas publicadas por las cuentas y dale me gusta a las que más te gusten.</p>
+        </div>
 
-      {mascotas.length === 0 ? (
-        <div className="text-center text-muted py-5">No hay mascotas disponibles.</div>
-      ) : (
-        <div className="row g-4">
-          {mascotas.map((pet) => {
-            const petImage = pet.fotoUrl || 'https://placehold.co/600x400?text=Sin+Foto';
-            const petState = pet.estado || 'Activo';
-            const isReported = petState === 'Reportado';
+        {mascotas.length === 0 ? (
+          <div className="text-center text-muted py-5">No hay mascotas disponibles.</div>
+        ) : (
+          <div className="d-flex flex-column gap-4">
+            {mascotas.map((pet) => {
+              const petImage = pet.fotoUrl || 'https://placehold.co/600x400?text=Sin+Foto';
+              const petState = pet.estado || 'Activo';
+              const isReported = petState === 'Reportado';
 
-            return (
-              <div key={pet.id} className="col-12 col-md-6 col-lg-4">
-                <div className="card h-100 shadow-sm" style={{ borderRadius: '16px', overflow: 'hidden' }}>
+              return (
+                <div key={pet.id} className="card h-100 shadow-sm" style={{ borderRadius: '16px', overflow: 'hidden' }}>
                   <img src={petImage} alt={pet.nombre} style={{ height: '240px', objectFit: 'cover', width: '100%' }} />
                   <div className="card-body d-flex flex-column">
                     <div className="d-flex justify-content-between align-items-start mb-2">
@@ -91,19 +116,36 @@ export const MascotasPage = () => {
                     </div>
                     <p className="small text-muted mb-3">{pet.descripcion || 'Sin descripción'}</p>
                     <div className="mt-auto d-flex justify-content-between align-items-center">
-                      <button className="btn btn-outline-success btn-sm" onClick={() => handleLike(pet.id)}>
-                        <i className="bi bi-heart-fill me-1"></i>
-                        Me gusta ({pet.likes ?? 0})
-                      </button>
+                      <div className="d-flex align-items-center gap-2">
+                        <button
+                          className="btn"
+                          onClick={() => handleLike(pet.id)}
+                          disabled={likeLoading[pet.id]}
+                          aria-label={`${likedPets.includes(pet.id) ? 'Quitar like' : 'Dar like'} a ${pet.nombre || 'esta mascota'}`}
+                          style={{
+                            width: '38px',
+                            height: '38px',
+                            padding: '0',
+                            border: 'none',
+                            background: 'transparent',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                          }}
+                        >
+                          <i className={`bi ${likedPets.includes(pet.id) ? 'bi-heart-fill text-danger' : 'bi-heart text-muted'} fs-5`}></i>
+                        </button>
+                        <span className="small text-muted">{pet.likes ?? 0}</span>
+                      </div>
                       <span className="small text-muted">{pet.tamano || 'Tamaño no especificado'}</span>
                     </div>
                   </div>
                 </div>
-              </div>
-            );
-          })}
-        </div>
-      )}
+              );
+            })}
+          </div>
+        )}
+      </div>
     </div>
   );
 };
