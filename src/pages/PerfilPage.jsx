@@ -1,4 +1,8 @@
-﻿import React, { useCallback, useEffect, useState } from 'react';
+﻿import React, {
+  useCallback,
+  useEffect,
+  useState
+} from 'react';
 import { API } from '../lib/api';
 import { PersonalInfo } from '../components/Perfil/PersonalInfo';
 import { PublicationPerfilView } from '../components/Perfil/PublicationPerfilView';
@@ -6,26 +10,54 @@ import { PetPerfilView } from '../components/Perfil/PetPerfilView';
 import '../components/Perfil/Perfil.css';
 
 export const PerfilPage = () => {
-  const [userData, setUserData] = useState(null);
-  const [publicaciones, setPublicaciones] = useState([]);
-  const [mascotas, setMascotas] = useState([]);
-  const [organizationRequest, setOrganizationRequest] = useState(null);
+  const [userData, setUserData] =
+    useState(null);
 
-  const [isLoading, setIsLoading] = useState(true);
+  const [publicaciones, setPublicaciones] =
+    useState([]);
+
+  const [mascotas, setMascotas] =
+    useState([]);
+
+  const [currentUserId, setCurrentUserId] =
+    useState(null);
+
+  const [
+    organizationRequest,
+    setOrganizationRequest
+  ] = useState(null);
+
+  const [isLoading, setIsLoading] =
+    useState(true);
+
+  const [sectionLoading, setSectionLoading] =
+    useState({
+      publicaciones: false,
+      mascotas: false,
+      organizationRequest: false
+    });
+
   const [error, setError] = useState(null);
-  const [activeTab, setActiveTab] = useState('publicaciones');
 
-  const getSessionData = () => {
-    const token = localStorage.getItem('token');
+  const [activeTab, setActiveTab] =
+    useState('publicaciones');
+
+  const getSessionData = useCallback(() => {
+    const token =
+      localStorage.getItem('token');
 
     if (!token) {
-      throw new Error('No hay una sesión iniciada.');
+      throw new Error(
+        'No hay una sesión iniciada.'
+      );
     }
 
     const tokenParts = token.split('.');
 
     if (tokenParts.length !== 3) {
-      throw new Error('El token de sesión no es válido.');
+      throw new Error(
+        'El token de sesión no es válido.'
+      );
     }
 
     try {
@@ -33,10 +65,14 @@ export const PerfilPage = () => {
         .replace(/-/g, '+')
         .replace(/_/g, '/');
 
-      const decodedPayload = JSON.parse(atob(payloadBase64));
-      const userId = decodedPayload.id;
+      const decodedPayload = JSON.parse(
+        atob(payloadBase64)
+      );
 
-      if (!userId) {
+      const sessionUserId =
+        decodedPayload.id;
+
+      if (!sessionUserId) {
         throw new Error(
           'No se pudo obtener el ID del usuario desde el token.'
         );
@@ -44,16 +80,24 @@ export const PerfilPage = () => {
 
       return {
         token,
-        userId
+        userId: sessionUserId
       };
-    } catch (err) {
-      console.error('Error al decodificar el token:', err);
+    } catch (sessionError) {
+      console.error(
+        'Error al decodificar el token:',
+        sessionError
+      );
 
-      throw new Error('No se pudo leer la información de la sesión.');
+      throw new Error(
+        'No se pudo leer la información de la sesión.'
+      );
     }
-  };
+  }, []);
 
-  const getErrorMessage = async (response, defaultMessage) => {
+  const getErrorMessage = async (
+    response,
+    defaultMessage
+  ) => {
     try {
       const data = await response.json();
 
@@ -69,331 +113,538 @@ export const PerfilPage = () => {
   };
 
   const loadUserData = useCallback(async () => {
-    const { token, userId } = getSessionData();
+    const { token, userId } =
+      getSessionData();
 
-    const userResponse = await fetch(`${API}/usuarios/${userId}`, {
-      method: 'GET',
-      headers: {
-        Authorization: `Bearer ${token}`
+    const response = await fetch(
+      `${API}/usuarios/${userId}`,
+      {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
       }
-    });
+    );
 
-    if (!userResponse.ok) {
-      const message = await getErrorMessage(
-        userResponse,
-        'Error al obtener los datos del perfil.'
+    if (!response.ok) {
+      throw new Error(
+        await getErrorMessage(
+          response,
+          'Error al obtener los datos del perfil.'
+        )
       );
-
-      throw new Error(message);
     }
 
-    const data = await userResponse.json();
+    const data = await response.json();
+
+    setCurrentUserId(userId);
     setUserData(data);
-  }, []);
+  }, [getSessionData]);
 
-  const loadPublicaciones = useCallback(async () => {
-    const { token, userId } = getSessionData();
+  const loadPublicaciones =
+    useCallback(async () => {
+      const { token, userId } =
+        getSessionData();
 
-    try {
-      const response = await fetch(
-        `${API}/publicaciones/usuario/${userId}`,
-        {
-          method: 'GET',
-          headers: {
-            Authorization: `Bearer ${token}`
+      setSectionLoading((previous) => ({
+        ...previous,
+        publicaciones: true
+      }));
+
+      try {
+        const response = await fetch(
+          `${API}/publicaciones/usuario/${userId}`,
+          {
+            method: 'GET',
+            headers: {
+              Authorization: `Bearer ${token}`
+            }
           }
-        }
-      );
-
-      if (!response.ok) {
-        const message = await getErrorMessage(
-          response,
-          'Error al obtener las publicaciones.'
         );
 
-        throw new Error(message);
-      }
-
-      const data = await response.json();
-      setPublicaciones(Array.isArray(data) ? data : []);
-    } catch (err) {
-      console.error('Error al cargar publicaciones:', err);
-      setPublicaciones([]);
-
-      throw err;
-    }
-  }, []);
-
-  const loadMascotas = useCallback(async () => {
-    const { token, userId } = getSessionData();
-
-    try {
-      const response = await fetch(
-        `${API}/mascotas/usuario/${userId}`,
-        {
-          method: 'GET',
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
+        if (!response.ok) {
+          throw new Error(
+            await getErrorMessage(
+              response,
+              'Error al obtener las publicaciones.'
+            )
+          );
         }
-      );
 
-      if (!response.ok) {
-        const message = await getErrorMessage(
-          response,
-          'Error al obtener las mascotas.'
+        const data = await response.json();
+
+        setPublicaciones(
+          Array.isArray(data) ? data : []
+        );
+      } catch (loadError) {
+        console.error(
+          'Error al cargar publicaciones:',
+          loadError
         );
 
-        throw new Error(message);
+        setPublicaciones([]);
+        throw loadError;
+      } finally {
+        setSectionLoading((previous) => ({
+          ...previous,
+          publicaciones: false
+        }));
       }
+    }, [getSessionData]);
 
-      const data = await response.json();
-      setMascotas(Array.isArray(data) ? data : []);
-    } catch (err) {
-      console.error('Error al cargar mascotas:', err);
-      setMascotas([]);
+  const loadMascotas =
+    useCallback(async () => {
+      const { token, userId } =
+        getSessionData();
 
-      throw err;
-    }
-  }, []);
+      setSectionLoading((previous) => ({
+        ...previous,
+        mascotas: true
+      }));
 
-  const loadOrganizationRequests = useCallback(async () => {
-    const { token, userId } = getSessionData();
-
-    try {
-      const response = await fetch(
-        `${API}/solicitudes-organizacion/usuario/${userId}`,
-        {
-          method: 'GET',
-          headers: {
-            Authorization: `Bearer ${token}`
+      try {
+        const response = await fetch(
+          `${API}/mascotas/usuario/${userId}`,
+          {
+            method: 'GET',
+            headers: {
+              Authorization: `Bearer ${token}`
+            }
           }
-        }
-      );
-
-      if (!response.ok) {
-        const message = await getErrorMessage(
-          response,
-          'Error al obtener las solicitudes de organización.'
         );
 
-        throw new Error(message);
-      }
-
-      const data = await response.json();
-      const requests = Array.isArray(data) ? data : [];
-
-      /*
-       * Se ordenan de la más reciente a la más antigua.
-       * Si fechaSolicitud no está disponible, se usa el ID.
-       */
-      const sortedRequests = [...requests].sort((a, b) => {
-        const dateA = a.fechaSolicitud
-          ? new Date(a.fechaSolicitud).getTime()
-          : 0;
-
-        const dateB = b.fechaSolicitud
-          ? new Date(b.fechaSolicitud).getTime()
-          : 0;
-
-        if (dateA !== dateB) {
-          return dateB - dateA;
+        if (!response.ok) {
+          throw new Error(
+            await getErrorMessage(
+              response,
+              'Error al obtener las mascotas.'
+            )
+          );
         }
 
-        return (b.id ?? 0) - (a.id ?? 0);
-      });
+        const data = await response.json();
 
-      setOrganizationRequest(sortedRequests[0] || null);
-    } catch (err) {
-      console.error(
-        'Error al cargar solicitudes de organización:',
-        err
-      );
+        setMascotas(
+          Array.isArray(data) ? data : []
+        );
+      } catch (loadError) {
+        console.error(
+          'Error al cargar mascotas:',
+          loadError
+        );
 
-      setOrganizationRequest(null);
+        setMascotas([]);
+        throw loadError;
+      } finally {
+        setSectionLoading((previous) => ({
+          ...previous,
+          mascotas: false
+        }));
+      }
+    }, [getSessionData]);
 
-      /*
-       * No se lanza el error para evitar que todo el perfil deje
-       * de mostrarse si solamente falla esta funcionalidad.
-       */
-    }
-  }, []);
+  const loadOrganizationRequests =
+    useCallback(async () => {
+      const { token, userId } =
+        getSessionData();
 
-  const handleMascotasUpdated = async () => {
-    try {
-      await loadMascotas();
-    } catch (err) {
-      console.error('Error al actualizar mascotas:', err);
-    }
-  };
+      setSectionLoading((previous) => ({
+        ...previous,
+        organizationRequest: true
+      }));
 
-  const handlePublicacionesUpdated = async () => {
-    try {
-      await loadPublicaciones();
-    } catch (err) {
-      console.error('Error al actualizar publicaciones:', err);
-    }
-  };
+      try {
+        const response = await fetch(
+          `${API}/solicitudes-organizacion/usuario/${userId}`,
+          {
+            method: 'GET',
+            headers: {
+              Authorization: `Bearer ${token}`
+            }
+          }
+        );
 
-  const handleOrganizationRequestCreated = async () => {
-    await loadOrganizationRequests();
-  };
+        if (!response.ok) {
+          throw new Error(
+            await getErrorMessage(
+              response,
+              'Error al obtener las solicitudes de organización.'
+            )
+          );
+        }
 
-  useEffect(() => {
-    const fetchData = async () => {
+        const data = await response.json();
+
+        const requests = Array.isArray(data)
+          ? data
+          : [];
+
+        const sortedRequests = [
+          ...requests
+        ].sort((a, b) => {
+          const dateA = a.fechaSolicitud
+            ? new Date(
+                a.fechaSolicitud
+              ).getTime()
+            : 0;
+
+          const dateB = b.fechaSolicitud
+            ? new Date(
+                b.fechaSolicitud
+              ).getTime()
+            : 0;
+
+          if (dateA !== dateB) {
+            return dateB - dateA;
+          }
+
+          return (
+            (b.id ?? 0) - (a.id ?? 0)
+          );
+        });
+
+        setOrganizationRequest(
+          sortedRequests[0] || null
+        );
+      } catch (loadError) {
+        console.error(
+          'Error al cargar solicitudes de organización:',
+          loadError
+        );
+
+        setOrganizationRequest(null);
+      } finally {
+        setSectionLoading((previous) => ({
+          ...previous,
+          organizationRequest: false
+        }));
+      }
+    }, [getSessionData]);
+
+  const handleMascotasUpdated =
+    async () => {
+      try {
+        await loadMascotas();
+      } catch (updateError) {
+        console.error(
+          'Error al actualizar mascotas:',
+          updateError
+        );
+      }
+    };
+
+  const handlePublicacionesUpdated =
+    async () => {
+      try {
+        await loadPublicaciones();
+      } catch (updateError) {
+        console.error(
+          'Error al actualizar publicaciones:',
+          updateError
+        );
+      }
+    };
+
+  const handleOrganizationRequestCreated =
+    async () => {
+      await loadOrganizationRequests();
+    };
+
+  const retryLoadProfile =
+    useCallback(async () => {
       setIsLoading(true);
       setError(null);
 
       try {
-        /*
-         * Primero cargamos al usuario porque es el dato esencial
-         * para mostrar el perfil.
-         */
         await loadUserData();
 
-        /*
-         * Estos datos se cargan en paralelo para reducir el tiempo
-         * total de espera.
-         */
-        const results = await Promise.allSettled([
-          loadPublicaciones(),
-          loadMascotas(),
-          loadOrganizationRequests()
-        ]);
+        const results =
+          await Promise.allSettled([
+            loadPublicaciones(),
+            loadMascotas(),
+            loadOrganizationRequests()
+          ]);
 
         results.forEach((result) => {
-          if (result.status === 'rejected') {
+          if (
+            result.status === 'rejected'
+          ) {
             console.error(
               'Error cargando una sección del perfil:',
               result.reason
             );
           }
         });
-      } catch (err) {
-        console.error('Error al cargar el perfil:', err);
+      } catch (retryError) {
+        console.error(
+          'Error al cargar el perfil:',
+          retryError
+        );
 
         setError(
-          err.message ||
-          'Ocurrió un error al cargar los datos del perfil.'
+          retryError.message ||
+            'No se pudo cargar el perfil.'
         );
       } finally {
         setIsLoading(false);
       }
-    };
+    }, [
+      loadUserData,
+      loadPublicaciones,
+      loadMascotas,
+      loadOrganizationRequests
+    ]);
 
-    fetchData();
-  }, [
-    loadUserData,
-    loadPublicaciones,
-    loadMascotas,
-    loadOrganizationRequests
-  ]);
+  useEffect(() => {
+    retryLoadProfile();
+  }, [retryLoadProfile]);
+
+  const renderTabContent = () => {
+    if (
+      activeTab === 'publicaciones'
+    ) {
+      if (
+        sectionLoading.publicaciones &&
+        publicaciones.length === 0
+      ) {
+        return (
+          <div className="profile-section-loading">
+            <span
+              className="spinner-border spinner-border-sm"
+              aria-hidden="true"
+            />
+
+            <span>
+              Cargando publicaciones...
+            </span>
+          </div>
+        );
+      }
+
+      return (
+        <PublicationPerfilView
+          publicaciones={publicaciones}
+        />
+      );
+    }
+
+    if (activeTab === 'mascotas') {
+      if (
+        sectionLoading.mascotas &&
+        mascotas.length === 0
+      ) {
+        return (
+          <div className="profile-section-loading">
+            <span
+              className="spinner-border spinner-border-sm"
+              aria-hidden="true"
+            />
+
+            <span>
+              Cargando mascotas...
+            </span>
+          </div>
+        );
+      }
+
+      return (
+        <PetPerfilView
+          mascotas={mascotas}
+          onMascotasUpdated={
+            handleMascotasUpdated
+          }
+          onPublicacionesUpdated={
+            handlePublicacionesUpdated
+          }
+        />
+      );
+    }
+
+    return (
+      <div className="profile-empty-state text-center py-5 px-3">
+        <div className="profile-empty-icon mx-auto mb-3">
+          <i className="bi bi-bookmark" />
+        </div>
+
+        <h3 className="h6 fw-bold mb-2">
+          Guardados
+        </h3>
+
+        <p className="text-muted mb-0">
+          Esta sección estará disponible
+          próximamente.
+        </p>
+      </div>
+    );
+  };
 
   if (isLoading) {
     return (
-      <div className="container-fluid min-vh-100 d-flex justify-content-center align-items-center bg-light">
-        <div
-          className="spinner-border text-primary"
-          role="status"
-          style={{
-            width: '3rem',
-            height: '3rem'
-          }}
-        >
-          <span className="visually-hidden">
-            Cargando perfil...
-          </span>
+      <main className="profile-page profile-page-state">
+        <div className="profile-loading-card">
+          <div
+            className="spinner-border text-success"
+            role="status"
+          >
+            <span className="visually-hidden">
+              Cargando perfil...
+            </span>
+          </div>
+
+          <h1 className="h5 fw-bold mt-3 mb-1">
+            Cargando perfil
+          </h1>
+
+          <p className="text-muted mb-0">
+            Estamos preparando tu información.
+          </p>
         </div>
-      </div>
+      </main>
     );
   }
 
   if (error) {
     return (
-      <div className="container-fluid min-vh-100 d-flex justify-content-center align-items-center bg-light">
-        <div
-          className="alert alert-danger shadow rounded-4"
-          role="alert"
-        >
-          <i className="bi bi-exclamation-triangle-fill me-2" />
-          {error}
+      <main className="profile-page profile-page-state">
+        <div className="profile-error-card">
+          <div className="profile-empty-icon mx-auto mb-3">
+            <i className="bi bi-exclamation-triangle" />
+          </div>
+
+          <h1 className="h5 fw-bold mb-2">
+            No se pudo cargar el perfil
+          </h1>
+
+          <p className="text-muted mb-4">
+            {error}
+          </p>
+
+          <button
+            type="button"
+            className="btn btn-success rounded-pill px-4"
+            onClick={retryLoadProfile}
+          >
+            <i className="bi bi-arrow-clockwise me-2" />
+            Intentar nuevamente
+          </button>
         </div>
-      </div>
+      </main>
     );
   }
 
   return (
-    <>
-      <div className="d-flex justify-content-center align-items-center">
-        <section className="container-fluid p-0 overflow-hidden bg-white w-50 mx-auto shadow rounded-4">
-          <PersonalInfo
-            userData={userData}
-            organizationRequest={organizationRequest}
-            onRequestCreated={handleOrganizationRequestCreated}
-          />
-        </section>
-      </div>
-
-      <div className="container mt-4">
-        <nav className="bg-white shadow-sm rounded-4 border">
-          <ul className="nav nav-pills nav-fill p-2">
-            <li className="nav-item">
-              <button
-                type="button"
-                className={`nav-link profile-nav-link ${activeTab === 'publicaciones' ? 'active' : ''
-                  }`}
-                onClick={() => setActiveTab('publicaciones')}
-              >
-                Publicaciones
-              </button>
-            </li>
-
-            <li className="nav-item">
-              <button
-                type="button"
-                className={`nav-link profile-nav-link ${activeTab === 'mascotas' ? 'active' : ''
-                  }`}
-                onClick={() => setActiveTab('mascotas')}
-              >
-                Mascotas
-              </button>
-            </li>
-
-            <li className="nav-item">
-              <button
-                type="button"
-                className={`nav-link profile-nav-link ${activeTab === 'guardados' ? 'active' : ''
-                  }`}
-                onClick={() => setActiveTab('guardados')}
-              >
-                Guardados
-              </button>
-            </li>
-          </ul>
-        </nav>
-
-        <div className="mt-3">
-          {activeTab === 'publicaciones' && (
-            <PublicationPerfilView
-              publicaciones={publicaciones}
+    <main className="profile-page">
+      <div className="container-fluid px-2 px-sm-3 px-lg-4">
+        <div className="profile-page-container mx-auto">
+          <section className="profile-header-section">
+            <PersonalInfo
+              userData={userData}
+              currentUserId={
+                currentUserId ??
+                userData?.id
+              }
+              isOwnProfile={true}
+              organizationRequest={
+                organizationRequest
+              }
+              onRequestCreated={
+                handleOrganizationRequestCreated
+              }
+              onProfileUpdated={
+                loadUserData
+              }
             />
-          )}
+          </section>
 
-          {activeTab === 'mascotas' && (
-            <PetPerfilView
-              mascotas={mascotas}
-              onMascotasUpdated={handleMascotasUpdated}
-              onPublicacionesUpdated={handlePublicacionesUpdated}
-            />
-          )}
+          <section className="profile-content-section mt-4">
+            <nav
+              className="profile-tabs-container"
+              aria-label="Secciones del perfil"
+            >
+              <div
+                className="nav nav-pills nav-fill profile-tabs"
+                role="tablist"
+              >
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={
+                    activeTab ===
+                    'publicaciones'
+                  }
+                  className={`nav-link profile-nav-link ${
+                    activeTab ===
+                    'publicaciones'
+                      ? 'active'
+                      : ''
+                  }`}
+                  onClick={() =>
+                    setActiveTab(
+                      'publicaciones'
+                    )
+                  }
+                >
+                  <i className="bi bi-grid-3x3-gap me-1 me-sm-2" />
 
-          {activeTab === 'guardados' && (
-            <div className="text-center py-5 text-muted">
-              Guardados próximamente
+                  <span className="d-none d-sm-inline">
+                    Publicaciones
+                  </span>
+
+                  <span className="d-sm-none">
+                    Posts
+                  </span>
+
+                </button>
+
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={
+                    activeTab === 'mascotas'
+                  }
+                  className={`nav-link profile-nav-link ${
+                    activeTab === 'mascotas'
+                      ? 'active'
+                      : ''
+                  }`}
+                  onClick={() =>
+                    setActiveTab('mascotas')
+                  }
+                >
+                  <i className="bi bi-heart me-1 me-sm-2" />
+
+                  <span>Mascotas</span>
+
+                </button>
+
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={
+                    activeTab === 'guardados'
+                  }
+                  className={`nav-link profile-nav-link ${
+                    activeTab === 'guardados'
+                      ? 'active'
+                      : ''
+                  }`}
+                  onClick={() =>
+                    setActiveTab('guardados')
+                  }
+                >
+                  <i className="bi bi-bookmark me-1 me-sm-2" />
+
+                  <span>Guardados</span>
+                </button>
+              </div>
+            </nav>
+
+            <div className="profile-tab-content mt-3">
+              {renderTabContent()}
             </div>
-          )}
+          </section>
         </div>
       </div>
-    </>
+    </main>
   );
 };

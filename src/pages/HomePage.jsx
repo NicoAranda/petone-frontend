@@ -5,7 +5,7 @@ import Post from '../components/Post';
 export const HomePage = ({ posts = [], refreshPosts }) => {
   return (
     <>
-      <div className="mb-4">
+      <div className="mb-4 pt-5 pt-lg-0">
         <Stories posts={posts}/>
       </div>
       <div className="d-flex justify-content-center w-100 pt-4 min-vh-100">
