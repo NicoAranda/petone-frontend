@@ -1,4 +1,6 @@
-export const API = import.meta.env.VITE_BFF_URL || '/bff'
+export const API =
+  import.meta.env.VITE_API_URL ||
+  'http://localhost:8082/bff'
 
 export const buildApi = (path = '') => {
   if (!path) return API
